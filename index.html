@@ -44,6 +44,8 @@
             line-height: 1.5;
             tab-size: 2;
             caret-color: white;
+            white-space: pre;
+            overflow-wrap: normal;
         }
         
         .code-editor:focus {
@@ -116,24 +118,99 @@
             overflow: hidden;
         }
         
-        .code-line-numbers {
+        /* Editor with line numbers */
+        .editor-wrapper {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .line-numbers {
             position: absolute;
             left: 0;
             top: 0;
-            height: 100%;
             width: 50px;
+            height: 100%;
             background-color: #1f2937;
             color: #9ca3af;
             font-family: 'Consolas', monospace;
             font-size: 14px;
             line-height: 1.5;
             text-align: right;
-            padding: 16px 8px;
+            padding-top: 16px;
+            padding-right: 10px;
             overflow: hidden;
             user-select: none;
             border-right: 1px solid #374151;
+            z-index: 1;
         }
         
+        .line-number {
+            padding: 0 5px;
+            height: 21px; /* Adjust based on line-height */
+            display: block;
+        }
+        
+        .line-number.current-line {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            font-weight: bold;
+        }
+        
+        .line-number:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        .text-editor {
+            position: absolute;
+            left: 50px;
+            top: 0;
+            width: calc(100% - 50px);
+            height: 100%;
+            background-color: transparent;
+            color: #f3f4f6;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border: none;
+            padding: 16px 10px;
+            resize: none;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow: auto;
+            z-index: 2;
+        }
+        
+        /* Fullscreen mode */
+        .fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 1000 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+        
+        .fullscreen .text-editor {
+            font-size: 16px !important;
+            padding: 20px !important;
+        }
+        
+        .fullscreen .line-numbers {
+            width: 60px !important;
+            font-size: 16px !important;
+            padding-top: 20px !important;
+        }
+        
+        .fullscreen .text-editor {
+            left: 60px !important;
+            width: calc(100% - 60px) !important;
+        }
+        
+        /* Notification */
         .notification {
             position: fixed;
             top: 20px;
@@ -146,6 +223,38 @@
         .notification.show {
             transform: translateX(0);
         }
+        
+        /* Modal for download */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: #1f2937;
+            border-radius: 10px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .highlight {
+            background-color: rgba(59, 130, 246, 0.3);
+            transition: background-color 0.3s;
+        }
     </style>
 </head>
 <body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800 transition-colors duration-300">
@@ -154,6 +263,22 @@
         <div class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center">
             <i class="fas fa-check-circle mr-3"></i>
             <span id="notification-text">ดำเนินการสำเร็จ</span>
+        </div>
+    </div>
+    
+    <!-- Download Modal -->
+    <div id="download-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">ดาวน์โหลดไฟล์ HTML</h3>
+            <div class="mb-6">
+                <label for="filename" class="block mb-2">ชื่อไฟล์:</label>
+                <input type="text" id="filename" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg" value="my-website.html">
+                <p class="text-sm text-gray-400 mt-2">ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ .html</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-download" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">ยกเลิก</button>
+                <button id="confirm-download" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">ดาวน์โหลด</button>
+            </div>
         </div>
     </div>
     
@@ -194,6 +319,11 @@
                     </div>
                 </div>
                 
+                <button id="download-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-download"></i>
+                    <span>ดาวน์โหลด</span>
+                </button>
+                
                 <button id="reset-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-red-700 transition-colors">
                     <i class="fas fa-trash"></i>
                     <span>รีเซ็ต</span>
@@ -217,16 +347,25 @@
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-code text-green-500"></i>
                         <h2 class="font-bold">HTML Editor</h2>
+                        <span class="text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded">Line Numbers: ON</span>
                     </div>
-                    <div class="text-sm text-gray-400">
-                        <i class="fas fa-expand-arrows-alt mr-1"></i>
-                        <span class="hidden md:inline">ลากเส้นแบ่งเพื่อปรับขนาด</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-sm text-gray-400 hidden md:block">
+                            <i class="fas fa-expand-arrows-alt mr-1"></i>
+                            <span>ลากเส้นแบ่งเพื่อปรับขนาด</span>
+                        </div>
+                        <button id="fullscreen-btn" class="ml-2 bg-gray-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-expand"></i>
+                            <span class="hidden md:inline">เต็มจอ</span>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="relative flex-1 overflow-hidden">
-                    <div id="line-numbers" class="code-line-numbers">1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25</div>
-                    <textarea id="html-editor" class="code-editor w-full h-full bg-gray-900 dark:bg-gray-800 text-gray-100 p-4 pl-16 resize-none absolute top-0 left-0" spellcheck="false"><!DOCTYPE html>
+                <div class="editor-wrapper">
+                    <div id="line-numbers-container" class="line-numbers">
+                        <!-- Line numbers will be generated here -->
+                    </div>
+                    <textarea id="html-editor" class="text-editor" spellcheck="false"><!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -517,7 +656,7 @@
         <footer class="mt-4 pt-3 border-t border-gray-700">
             <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                 <div class="mb-2 md:mb-0 text-center md:text-left">
-                    <p><i class="fas fa-code mr-1"></i> Live HTML Code Tester - สร้างด้วย HTML5, JavaScript และ Tailwind CSS</p>
+                    <p><i class="fas fa-code mr-1"></i> Live HTML Code Tester - ครบเครื่องเรื่องไอที</p>
                 </div>
                 <div class="flex flex-wrap justify-center gap-4">
                     <div class="flex items-center space-x-2">
@@ -529,8 +668,8 @@
                         <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+R</kbd> เพื่อรันโค้ด</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <i class="fas fa-palette"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+D</kbd> เพื่อสลับธีม</span>
+                        <i class="fas fa-expand"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">F11</kbd> เพื่อเต็มจอ</span>
                     </div>
                 </div>
             </div>
@@ -543,7 +682,7 @@
             // เก็บ reference ไปยัง element สำคัญ
             const htmlEditor = document.getElementById('html-editor');
             const previewFrame = document.getElementById('preview-frame');
-            const lineNumbers = document.getElementById('line-numbers');
+            const lineNumbersContainer = document.getElementById('line-numbers-container');
             const themeToggle = document.getElementById('theme-toggle');
             const themeText = document.getElementById('theme-text');
             const liveToggle = document.getElementById('live-toggle');
@@ -552,18 +691,26 @@
             const liveStatusText = document.getElementById('live-status-text');
             const runBtn = document.getElementById('run-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
             const lastUpdateEl = document.getElementById('last-update');
             const resizer = document.querySelector('.resizer');
             const editorSection = document.querySelector('.editor-section');
             const previewSection = document.querySelector('.preview-section');
             const notification = document.getElementById('notification');
             const notificationText = document.getElementById('notification-text');
+            const downloadModal = document.getElementById('download-modal');
+            const filenameInput = document.getElementById('filename');
+            const confirmDownloadBtn = document.getElementById('confirm-download');
+            const cancelDownloadBtn = document.getElementById('cancel-download');
             
             // ตัวแปรสถานะ
             let isLiveMode = true;
             let isDarkMode = true;
             let isResizing = false;
+            let isFullscreen = false;
             let editorWidth = 50; // เปอร์เซ็นต์
+            let currentLine = 1;
             
             // โหลดโค้ดที่บันทึกไว้ (ถ้ามี)
             function loadSavedCode() {
@@ -572,6 +719,7 @@
                     if (savedCode) {
                         htmlEditor.value = savedCode;
                         updatePreview();
+                        updateLineNumbers();
                         showNotification('โหลดโค้ดที่บันทึกไว้สำเร็จ');
                     }
                 } catch (e) {
@@ -610,11 +758,71 @@
             // อัปเดต line numbers
             function updateLineNumbers() {
                 const lines = htmlEditor.value.split('\n').length;
-                let numbers = '';
-                for (let i = 1; i <= Math.max(lines, 25); i++) {
-                    numbers += i + '\n';
+                const scrollTop = htmlEditor.scrollTop;
+                const lineHeight = 21; // ควรตรงกับ line-height ใน CSS
+                
+                // ล้าง line numbers เก่า
+                lineNumbersContainer.innerHTML = '';
+                
+                // สร้าง line numbers ใหม่
+                for (let i = 1; i <= Math.max(lines, 30); i++) {
+                    const lineNumber = document.createElement('div');
+                    lineNumber.className = 'line-number';
+                    lineNumber.textContent = i;
+                    lineNumber.dataset.line = i;
+                    
+                    // ไฮไลต์บรรทัดปัจจุบัน
+                    if (i === currentLine) {
+                        lineNumber.classList.add('current-line');
+                    }
+                    
+                    // คลิกเพื่อไปยังบรรทัดนั้น
+                    lineNumber.addEventListener('click', function() {
+                        goToLine(i);
+                    });
+                    
+                    lineNumbersContainer.appendChild(lineNumber);
                 }
-                lineNumbers.textContent = numbers;
+                
+                // ซิงค์การเลื่อน
+                lineNumbersContainer.scrollTop = scrollTop;
+            }
+            
+            // ไปยังบรรทัดที่ระบุ
+            function goToLine(lineNumber) {
+                const lines = htmlEditor.value.split('\n');
+                if (lineNumber < 1 || lineNumber > lines.length) return;
+                
+                // คำนวณตำแหน่ง
+                const lineHeight = 21;
+                const targetPosition = (lineNumber - 1) * lineHeight;
+                
+                // เลื่อน editor ไปยังตำแหน่งนั้น
+                htmlEditor.scrollTop = targetPosition;
+                
+                // ตั้งค่าเคอร์เซอร์ไปยังต้นบรรทัด
+                let charIndex = 0;
+                for (let i = 0; i < lineNumber - 1; i++) {
+                    charIndex += lines[i].length + 1; // +1 สำหรับ newline
+                }
+                
+                htmlEditor.focus();
+                htmlEditor.setSelectionRange(charIndex, charIndex);
+                
+                // อัปเดต current line และไฮไลต์
+                currentLine = lineNumber;
+                updateLineNumbers();
+                
+                // ไฮไลต์บรรทัดชั่วคราว
+                const lineElement = lineNumbersContainer.querySelector(`[data-line="${lineNumber}"]`);
+                if (lineElement) {
+                    lineElement.classList.add('highlight');
+                    setTimeout(() => {
+                        lineElement.classList.remove('highlight');
+                    }, 1000);
+                }
+                
+                showNotification(`ไปยังบรรทัดที่ ${lineNumber}`);
             }
             
             // สลับโหมดธีม
@@ -672,6 +880,41 @@
                     liveIndicator.classList.remove('bg-green-900', 'text-green-200');
                     liveIndicator.classList.add('bg-gray-800', 'text-gray-400');
                     showNotification('ปิดโหมดอัปเดตแบบเรียลไทม์');
+                }
+            }
+            
+            // สลับโหมดเต็มจอ
+            function toggleFullscreen() {
+                isFullscreen = !isFullscreen;
+                
+                if (isFullscreen) {
+                    editorSection.classList.add('fullscreen');
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i><span class="hidden md:inline">ย่อ</span>';
+                    fullscreenBtn.classList.remove('bg-gray-700');
+                    fullscreenBtn.classList.add('bg-yellow-600');
+                    
+                    // ซ่อน preview section
+                    previewSection.style.display = 'none';
+                    resizer.style.display = 'none';
+                    
+                    // อัปเดต line numbers สำหรับ fullscreen
+                    updateLineNumbers();
+                    
+                    showNotification('เปิดโหมดเต็มจอแล้ว - กด ESC เพื่อออก');
+                } else {
+                    editorSection.classList.remove('fullscreen');
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i><span class="hidden md:inline">เต็มจอ</span>';
+                    fullscreenBtn.classList.remove('bg-yellow-600');
+                    fullscreenBtn.classList.add('bg-gray-700');
+                    
+                    // แสดง preview section
+                    previewSection.style.display = 'flex';
+                    resizer.style.display = 'block';
+                    
+                    // อัปเดต line numbers กลับสู่ปกติ
+                    updateLineNumbers();
+                    
+                    showNotification('ปิดโหมดเต็มจอ');
                 }
             }
             
@@ -736,6 +979,44 @@
                     updatePreview();
                     showNotification('รีเซ็ตโค้ดเป็นค่าเริ่มต้นแล้ว');
                 }
+            }
+            
+            // แสดง modal ดาวน์โหลด
+            function showDownloadModal() {
+                downloadModal.classList.add('show');
+                filenameInput.focus();
+                filenameInput.select();
+            }
+            
+            // ซ่อน modal ดาวน์โหลด
+            function hideDownloadModal() {
+                downloadModal.classList.remove('show');
+            }
+            
+            // ดาวน์โหลดไฟล์ HTML
+            function downloadHTML() {
+                const content = htmlEditor.value;
+                const filename = filenameInput.value || 'my-html-file.html';
+                
+                // สร้าง Blob จากเนื้อหา
+                const blob = new Blob([content], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                
+                // สร้าง element a สำหรับดาวน์โหลด
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // ล้างทรัพยากร
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                hideDownloadModal();
+                showNotification(`ดาวน์โหลดไฟล์ "${filename}" สำเร็จ`);
             }
             
             // แสดงการแจ้งเตือน
@@ -806,6 +1087,15 @@
                 }
             }
             
+            // ตรวจจับบรรทัดปัจจุบันจากตำแหน่งเคอร์เซอร์
+            function detectCurrentLine() {
+                const cursorPosition = htmlEditor.selectionStart;
+                const textBeforeCursor = htmlEditor.value.substring(0, cursorPosition);
+                const lines = textBeforeCursor.split('\n');
+                currentLine = lines.length;
+                updateLineNumbers();
+            }
+            
             // ตั้งค่า keyboard shortcuts
             function setupKeyboardShortcuts() {
                 document.addEventListener('keydown', function(e) {
@@ -833,6 +1123,39 @@
                         e.preventDefault();
                         toggleLiveMode();
                     }
+                    
+                    // Ctrl+E เพื่อสลับเต็มจอ
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                        e.preventDefault();
+                        toggleFullscreen();
+                    }
+                    
+                    // Ctrl+G เพื่อไปยังบรรทัด
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+                        e.preventDefault();
+                        const line = prompt('ไปยังบรรทัดที่:');
+                        if (line && !isNaN(line)) {
+                            goToLine(parseInt(line));
+                        }
+                    }
+                    
+                    // F11 สำหรับเต็มจอ
+                    if (e.key === 'F11') {
+                        e.preventDefault();
+                        toggleFullscreen();
+                    }
+                    
+                    // ESC เพื่อออกจากเต็มจอ
+                    if (e.key === 'Escape' && isFullscreen) {
+                        toggleFullscreen();
+                    }
+                });
+                
+                // ตรวจจับการเลื่อนเมาส์และการกดคีย์ใน editor
+                htmlEditor.addEventListener('click', detectCurrentLine);
+                htmlEditor.addEventListener('keyup', detectCurrentLine);
+                htmlEditor.addEventListener('scroll', function() {
+                    lineNumbersContainer.scrollTop = htmlEditor.scrollTop;
                 });
             }
             
@@ -855,8 +1178,34 @@
                 // ปุ่มสลับโหมด live
                 liveToggle.addEventListener('click', toggleLiveMode);
                 
+                // ปุ่มเต็มจอ
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+                
                 // ปุ่มรีเซ็ต
                 resetBtn.addEventListener('click', resetCode);
+                
+                // ปุ่มดาวน์โหลด
+                downloadBtn.addEventListener('click', showDownloadModal);
+                
+                // ปุ่มยืนยันดาวน์โหลด
+                confirmDownloadBtn.addEventListener('click', downloadHTML);
+                
+                // ปุ่มยกเลิกดาวน์โหลด
+                cancelDownloadBtn.addEventListener('click', hideDownloadModal);
+                
+                // ปิด modal เมื่อคลิกภายนอก
+                downloadModal.addEventListener('click', function(e) {
+                    if (e.target === downloadModal) {
+                        hideDownloadModal();
+                    }
+                });
+                
+                // ดาวน์โหลดเมื่อกด Enter ในช่องชื่อไฟล์
+                filenameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        downloadHTML();
+                    }
+                });
                 
                 // เมื่อ editor ได้รับ focus
                 htmlEditor.addEventListener('focus', function() {
@@ -867,9 +1216,6 @@
                 htmlEditor.addEventListener('blur', function() {
                     this.style.outline = 'none';
                 });
-                
-                // อัปเดต line numbers เมื่อโหลดหน้า
-                updateLineNumbers();
             }
             
             // เริ่มต้นแอปพลิเคชัน
@@ -888,6 +1234,9 @@
                 
                 // ตั้งค่า keyboard shortcuts
                 setupKeyboardShortcuts();
+                
+                // อัปเดต line numbers ครั้งแรก
+                updateLineNumbers();
                 
                 // อัปเดต preview ครั้งแรก
                 setTimeout(() => {
