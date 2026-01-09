@@ -1,68 +1,904 @@
 <!DOCTYPE html>
-<html>
+<html lang="th" class="dark">
 <head>
-<title>W3.CSS Template</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
-<style>
-body {font-family: "Raleway", Arial, sans-serif}
-.w3-row img {margin-bottom: -8px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live HTML Code Tester - Dark Mode</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .resizer {
+            position: absolute;
+            top: 0;
+            right: -5px;
+            width: 10px;
+            height: 100%;
+            cursor: col-resize;
+            z-index: 50;
+        }
+        
+        .resizer:hover {
+            background-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .resizer.active {
+            background-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .code-editor {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            tab-size: 2;
+            caret-color: white;
+        }
+        
+        .code-editor:focus {
+            outline: none;
+        }
+        
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            border-radius: 0.5rem;
+        }
+        
+        .dark .preview-frame {
+            background: #1e293b;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .live-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #374151;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        
+        /* Split view layout */
+        .split-container {
+            display: flex;
+            height: calc(100vh - 120px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .editor-section {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .preview-section {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .code-line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 50px;
+            background-color: #1f2937;
+            color: #9ca3af;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: right;
+            padding: 16px 8px;
+            overflow: hidden;
+            user-select: none;
+            border-right: 1px solid #374151;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800 transition-colors duration-300">
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center">
+            <i class="fas fa-check-circle mr-3"></i>
+            <span id="notification-text">ดำเนินการสำเร็จ</span>
+        </div>
+    </div>
+    
+    <div class="container mx-auto px-4 py-2 h-screen flex flex-col">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-4 py-3">
+            <div class="flex items-center space-x-3 mb-3 md:mb-0">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fas fa-code text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Live HTML Code Tester</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">ทดสอบโค้ด HTML แบบเรียลไทม์</p>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="flex flex-wrap gap-3 items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm hidden md:block">โหมดธีม:</span>
+                    <button id="theme-toggle" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-moon"></i>
+                        <span id="theme-text">ดาร์ก</span>
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm hidden md:block">อัปเดต:</span>
+                    <div class="flex space-x-2">
+                        <button id="live-toggle" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors">
+                            <i class="fas fa-play"></i>
+                            <span id="live-text">Live</span>
+                        </button>
+                        <button id="run-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-redo"></i>
+                            <span>รันโค้ด</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <button id="reset-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-red-700 transition-colors">
+                    <i class="fas fa-trash"></i>
+                    <span>รีเซ็ต</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Live Indicator -->
+        <div class="flex items-center justify-center mb-2">
+            <div id="live-indicator" class="flex items-center space-x-2 bg-green-900 text-green-200 px-4 py-2 rounded-lg">
+                <i class="fas fa-circle live-indicator"></i>
+                <span id="live-status-text">อัปเดตแบบเรียลไทม์</span>
+            </div>
+        </div>
+        
+        <!-- Split View Container -->
+        <div class="split-container">
+            <!-- Editor Panel -->
+            <div class="editor-section bg-gray-900 dark:bg-gray-800 rounded-lg border border-gray-700 relative">
+                <div class="flex justify-between items-center bg-gray-800 dark:bg-gray-900 px-4 py-3 rounded-t-lg">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-code text-green-500"></i>
+                        <h2 class="font-bold">HTML Editor</h2>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>
+                        <span class="hidden md:inline">ลากเส้นแบ่งเพื่อปรับขนาด</span>
+                    </div>
+                </div>
+                
+                <div class="relative flex-1 overflow-hidden">
+                    <div id="line-numbers" class="code-line-numbers">1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25</div>
+                    <textarea id="html-editor" class="code-editor w-full h-full bg-gray-900 dark:bg-gray-800 text-gray-100 p-4 pl-16 resize-none absolute top-0 left-0" spellcheck="false"><!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เว็บไซต์ตัวอย่าง</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card h3 {
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #4338ca;
+        }
+        
+        .demo-box {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .demo-box h2 {
+            color: #4f46e5;
+            margin-bottom: 1.5rem;
+        }
+        
+        .color-box {
+            width: 100px;
+            height: 100px;
+            background-color: #4f46e5;
+            margin: 1rem auto;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .color-box:hover {
+            transform: rotate(15deg) scale(1.1);
+            background-color: #7c73ff;
+        }
+        
+        .counter {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin: 1rem 0;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #666;
+            border-top: 1px solid #eee;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .card-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-
-<!-- !PAGE CONTENT! -->
-<div class="w3-content" style="max-width:1500px">
-
-  <!-- Header -->
-  <header class="w3-container w3-xlarge w3-padding-24">
-    <a href="#" class="w3-left w3-button w3-white">MY ART</a>
-    <a href="#about" class="w3-right w3-button w3-white">About</a>
-  </header>
-
-  <!-- Photo Grid -->
-  <div class="w3-row">
-    <div class="w3-half">
-      <img src="https://www.w3schools.com/w3images/streetart.jpg" style="width:100%"> 
-      <img src="https://www.w3schools.com/w3images/streetart2.jpg" style="width:100%">
-      <img src="https://www.w3schools.com/w3images/streetart5.jpg" style="width:100%">
+    <div class="container">
+        <header>
+            <h1>ยินดีต้อนรับสู่ Live HTML Tester</h1>
+            <p class="subtitle">ทดสอบและดูผลลัพธ์โค้ด HTML ของคุณแบบเรียลไทม์</p>
+        </header>
+        
+        <div class="card-container">
+            <div class="card">
+                <h3>HTML5</h3>
+                <p>สร้างโครงสร้างเว็บไซต์ด้วย HTML5 ที่ทันสมัย รองรับ Semantic Elements</p>
+                <a href="#" class="btn">เรียนรู้เพิ่มเติม</a>
+            </div>
+            
+            <div class="card">
+                <h3>CSS3</h3>
+                <p>ออกแบบเว็บไซต์ให้สวยงามด้วย CSS3 รองรับ Responsive Design</p>
+                <a href="#" class="btn">เรียนรู้เพิ่มเติม</a>
+            </div>
+            
+            <div class="card">
+                <h3>JavaScript</h3>
+                <p>เพิ่มความ Interactive ให้เว็บไซต์ด้วย JavaScript และ API ต่าง ๆ</p>
+                <a href="#" class="btn">เรียนรู้เพิ่มเติม</a>
+            </div>
+        </div>
+        
+        <div class="demo-box">
+            <h2>ทดสอบ Interactive Elements</h2>
+            <p>ลองคลิกปุ่มด้านล่างเพื่อดูการทำงานของ JavaScript</p>
+            
+            <div class="color-box" id="colorBox"></div>
+            
+            <div class="counter" id="counter">0</div>
+            
+            <div class="controls">
+                <button class="btn" onclick="incrementCounter()">เพิ่มค่า</button>
+                <button class="btn" onclick="decrementCounter()">ลดค่า</button>
+                <button class="btn" onclick="resetCounter()">รีเซ็ต</button>
+                <button class="btn" onclick="changeColor()">เปลี่ยนสี</button>
+            </div>
+            
+            <p id="message" class="mt-4">ยังไม่มีการคลิกปุ่ม</p>
+        </div>
+        
+        <footer>
+            <p>สร้างด้วย &hearts; โดย Live HTML Tester | รองรับทุกอุปกรณ์</p>
+            <p class="mt-2" id="timestamp">โหลดหน้าเว็บเมื่อ: <span id="time"></span></p>
+        </footer>
+    </div>
+    
+    <script>
+        let counter = 0;
+        const colorBox = document.getElementById('colorBox');
+        const counterElement = document.getElementById('counter');
+        const messageElement = document.getElementById('message');
+        const timeElement = document.getElementById('time');
+        
+        // ตั้งค่าเวลาปัจจุบัน
+        timeElement.textContent = new Date().toLocaleTimeString('th-TH');
+        
+        function incrementCounter() {
+            counter++;
+            updateCounter();
+            messageElement.textContent = `เพิ่มค่าเป็น ${counter} เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+        }
+        
+        function decrementCounter() {
+            counter--;
+            updateCounter();
+            messageElement.textContent = `ลดค่าเป็น ${counter} เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+        }
+        
+        function resetCounter() {
+            counter = 0;
+            updateCounter();
+            messageElement.textContent = `รีเซ็ตค่าเป็น 0 เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+        }
+        
+        function updateCounter() {
+            counterElement.textContent = counter;
+            
+            // เปลี่ยนสี counter ตามค่า
+            if (counter > 0) {
+                counterElement.style.color = '#10b981';
+            } else if (counter < 0) {
+                counterElement.style.color = '#ef4444';
+            } else {
+                counterElement.style.color = '#4f46e5';
+            }
+        }
+        
+        function changeColor() {
+            const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            colorBox.style.backgroundColor = randomColor;
+            messageElement.textContent = `เปลี่ยนสีเป็น ${randomColor} เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+        }
+        
+        // เริ่มต้นด้วยสีสุ่ม
+        changeColor();
+        
+        console.log('ระบบทดสอบพร้อมใช้งาน!');
+    </script>
+</body>
+</html></textarea>
+                </div>
+                
+                <!-- Resizer -->
+                <div class="resizer"></div>
+            </div>
+            
+            <!-- Preview Panel -->
+            <div class="preview-section bg-gray-800 dark:bg-gray-700 rounded-lg border border-gray-700">
+                <div class="flex justify-between items-center bg-gray-800 dark:bg-gray-900 px-4 py-3 rounded-t-lg">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-eye text-blue-500"></i>
+                        <h2 class="font-bold">Live Preview</h2>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>อัปเดตล่าสุด: <span id="last-update">-</span></span>
+                    </div>
+                </div>
+                
+                <div class="flex-1 p-2 overflow-hidden">
+                    <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-4 pt-3 border-t border-gray-700">
+            <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                <div class="mb-2 md:mb-0 text-center md:text-left">
+                    <p><i class="fas fa-code mr-1"></i> Live HTML Code Tester - สร้างด้วย HTML5, JavaScript และ Tailwind CSS</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-keyboard"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+S</kbd> เพื่อบันทึก</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-bolt"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+R</kbd> เพื่อรันโค้ด</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-palette"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+D</kbd> เพื่อสลับธีม</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
-    <div class="w3-half">
-      <img src="https://www.w3schools.com/w3images/streetart3.jpg" style="width:100%">
-      <img src="https://www.w3schools.com/w3images/streetart4.jpg" style="width:100%">
+    <script>
+        // เริ่มต้นแอปพลิเคชันเมื่อ DOM โหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            // เก็บ reference ไปยัง element สำคัญ
+            const htmlEditor = document.getElementById('html-editor');
+            const previewFrame = document.getElementById('preview-frame');
+            const lineNumbers = document.getElementById('line-numbers');
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeText = document.getElementById('theme-text');
+            const liveToggle = document.getElementById('live-toggle');
+            const liveText = document.getElementById('live-text');
+            const liveIndicator = document.getElementById('live-indicator');
+            const liveStatusText = document.getElementById('live-status-text');
+            const runBtn = document.getElementById('run-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const lastUpdateEl = document.getElementById('last-update');
+            const resizer = document.querySelector('.resizer');
+            const editorSection = document.querySelector('.editor-section');
+            const previewSection = document.querySelector('.preview-section');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            // ตัวแปรสถานะ
+            let isLiveMode = true;
+            let isDarkMode = true;
+            let isResizing = false;
+            let editorWidth = 50; // เปอร์เซ็นต์
+            
+            // โหลดโค้ดที่บันทึกไว้ (ถ้ามี)
+            function loadSavedCode() {
+                try {
+                    const savedCode = localStorage.getItem('htmlCodeTester');
+                    if (savedCode) {
+                        htmlEditor.value = savedCode;
+                        updatePreview();
+                        showNotification('โหลดโค้ดที่บันทึกไว้สำเร็จ');
+                    }
+                } catch (e) {
+                    console.error('Error loading saved code:', e);
+                }
+            }
+            
+            // อัปเดต preview
+            function updatePreview() {
+                try {
+                    const htmlCode = htmlEditor.value;
+                    
+                    // สร้างเอกสารใหม่สำหรับ iframe
+                    const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                    previewDoc.open();
+                    previewDoc.write(htmlCode);
+                    previewDoc.close();
+                    
+                    // อัปเดตเวลาล่าสุด
+                    const now = new Date();
+                    lastUpdateEl.textContent = now.toLocaleTimeString('th-TH');
+                    
+                    // บันทึกลง localStorage
+                    localStorage.setItem('htmlCodeTester', htmlCode);
+                    
+                    // แสดงการแจ้งเตือนถ้าไม่ได้อยู่ในโหมด live
+                    if (!isLiveMode) {
+                        showNotification('อัปเดต preview สำเร็จ');
+                    }
+                } catch (e) {
+                    console.error('Error updating preview:', e);
+                    showNotification('เกิดข้อผิดพลาดในการอัปเดต preview', 'error');
+                }
+            }
+            
+            // อัปเดต line numbers
+            function updateLineNumbers() {
+                const lines = htmlEditor.value.split('\n').length;
+                let numbers = '';
+                for (let i = 1; i <= Math.max(lines, 25); i++) {
+                    numbers += i + '\n';
+                }
+                lineNumbers.textContent = numbers;
+            }
+            
+            // สลับโหมดธีม
+            function toggleTheme() {
+                const htmlElement = document.documentElement;
+                isDarkMode = !isDarkMode;
+                
+                if (isDarkMode) {
+                    htmlElement.classList.add('dark');
+                    themeText.textContent = 'ดาร์ก';
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>ดาร์ก</span>';
+                    themeToggle.classList.remove('bg-gray-200', 'text-gray-800');
+                    themeToggle.classList.add('bg-gray-800', 'text-white');
+                } else {
+                    htmlElement.classList.remove('dark');
+                    themeText.textContent = 'ไลต์';
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>ไลต์</span>';
+                    themeToggle.classList.remove('bg-gray-800', 'text-white');
+                    themeToggle.classList.add('bg-gray-200', 'text-gray-800');
+                }
+                
+                // บันทึกการตั้งค่า
+                localStorage.setItem('htmlTesterTheme', isDarkMode ? 'dark' : 'light');
+                showNotification('เปลี่ยนโหมดธีมเป็น: ' + (isDarkMode ? 'ดาร์ก' : 'ไลต์'));
+            }
+            
+            // โหลดการตั้งค่าธีมที่บันทึกไว้
+            function loadTheme() {
+                const savedTheme = localStorage.getItem('htmlTesterTheme');
+                if (savedTheme === 'light') {
+                    isDarkMode = false;
+                    toggleTheme(); // เรียกเพื่อสลับไปยัง light mode
+                }
+            }
+            
+            // สลับโหมด live update
+            function toggleLiveMode() {
+                isLiveMode = !isLiveMode;
+                
+                if (isLiveMode) {
+                    liveText.textContent = 'Live';
+                    liveStatusText.textContent = 'อัปเดตแบบเรียลไทม์';
+                    liveToggle.innerHTML = '<i class="fas fa-play"></i><span>Live</span>';
+                    liveToggle.classList.remove('bg-gray-600');
+                    liveToggle.classList.add('bg-green-600');
+                    liveIndicator.classList.remove('bg-gray-800', 'text-gray-400');
+                    liveIndicator.classList.add('bg-green-900', 'text-green-200');
+                    showNotification('เปิดโหมดอัปเดตแบบเรียลไทม์');
+                } else {
+                    liveText.textContent = 'Paused';
+                    liveStatusText.textContent = 'หยุดอัปเดตชั่วคราว';
+                    liveToggle.innerHTML = '<i class="fas fa-pause"></i><span>Paused</span>';
+                    liveToggle.classList.remove('bg-green-600');
+                    liveToggle.classList.add('bg-gray-600');
+                    liveIndicator.classList.remove('bg-green-900', 'text-green-200');
+                    liveIndicator.classList.add('bg-gray-800', 'text-gray-400');
+                    showNotification('ปิดโหมดอัปเดตแบบเรียลไทม์');
+                }
+            }
+            
+            // รีเซ็ตโค้ดเป็นค่าเริ่มต้น
+            function resetCode() {
+                if (confirm('คุณแน่ใจที่จะรีเซ็ตโค้ดทั้งหมด? การเปลี่ยนแปลงทั้งหมดจะหายไป')) {
+                    // โค้ดเริ่มต้น
+                    const defaultCode = `<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เว็บไซต์ตัวอย่าง</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #4f46e5;
+        }
+        .box {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4338ca;
+        }
+    </style>
+</head>
+<body>
+    <h1>ยินดีต้อนรับสู่ HTML Tester</h1>
+    <div class="box">
+        <p>นี่คือตัวอย่างโค้ด HTML พื้นฐาน</p>
+        <p>แก้ไขโค้ดทางด้านซ้ายเพื่อดูการเปลี่ยนแปลง</p>
     </div>
-  </div>
-  
-<!-- End Page Content -->
-</div>
-
-<!-- Footer / About Section -->
-<footer class="w3-light-grey w3-padding-64 w3-center" id="about">
-  <h2>About</h2>
-  <img src="https://www.w3schools.com/w3images/boy.jpg" class="w3-image w3-padding-32" width="300" height="300">
-  <form style="margin:auto;width:60%" action="/action_page.php" target="_blank">
-    <p>Just me, myself and I, exploring the universe of unknownment. I have a heart of love and an interest of lorem ipsum and mauris neque quam blog. I want to share my world with you. Praesent tincidunt sed tellus ut rutrum. Sed vitae justo condimentum, porta lectus vitae, ultricies congue gravida diam non fringilla. Praesent tincidunt sed tellus ut rutrum. Sed vitae justo condimentum, porta lectus vitae, ultricies congue gravida diam non fringilla.</p>
-    <p class="w3-large w3-text-pink">Do not hesitate to contact me!</p>
-    <div class="w3-section">
-      <label><b>Name</b></label>
-      <input class="w3-input w3-border" type="text" required name="Name">
-    </div>
-    <div class="w3-section">
-      <label><b>Email</b></label>
-      <input class="w3-input w3-border" type="text" required name="Email">
-    </div>
-    <div class="w3-section">
-      <label><b>Message</b></label>
-      <input class="w3-input w3-border" required name="Message">
-    </div>
-    <button type="submit" class="w3-button w3-block w3-dark-grey">Send</button>
-  </form>
-  <br>
-  <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" class="w3-hover-text-green">w3.css</a></p>
-</footer>
- 
+    <button onclick="alert('สวัสดีจาก HTML Tester!')">คลิกทดสอบ</button>
+    <p id="time-display"></p>
+    
+    <script>
+        document.getElementById('time-display').textContent = 'เวลา: ' + new Date().toLocaleTimeString('th-TH');
+    <\/script>
+</body>
+</html>`;
+                    
+                    htmlEditor.value = defaultCode;
+                    updateLineNumbers();
+                    updatePreview();
+                    showNotification('รีเซ็ตโค้ดเป็นค่าเริ่มต้นแล้ว');
+                }
+            }
+            
+            // แสดงการแจ้งเตือน
+            function showNotification(message, type = 'success') {
+                notificationText.textContent = message;
+                
+                // ตั้งค่าสีตามประเภท
+                if (type === 'error') {
+                    notification.firstElementChild.className = 'bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center';
+                } else {
+                    notification.firstElementChild.className = 'bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center';
+                }
+                
+                // แสดงการแจ้งเตือน
+                notification.classList.add('show');
+                
+                // ซ่อนการแจ้งเตือนหลังจาก 3 วินาที
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // ตั้งค่า resizer
+            function setupResizer() {
+                resizer.addEventListener('mousedown', function(e) {
+                    isResizing = true;
+                    resizer.classList.add('active');
+                    document.body.style.cursor = 'col-resize';
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isResizing) return;
+                    
+                    const containerWidth = document.querySelector('.split-container').offsetWidth;
+                    const mouseX = e.clientX;
+                    const containerLeft = document.querySelector('.split-container').getBoundingClientRect().left;
+                    
+                    // คำนวณเปอร์เซ็นต์ความกว้าง
+                    editorWidth = ((mouseX - containerLeft) / containerWidth) * 100;
+                    
+                    // จำกัดขนาดขั้นต่ำและสูงสุด
+                    if (editorWidth < 20) editorWidth = 20;
+                    if (editorWidth > 80) editorWidth = 80;
+                    
+                    // อัปเดตขนาด
+                    editorSection.style.width = `${editorWidth}%`;
+                    previewSection.style.width = `${100 - editorWidth}%`;
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    if (isResizing) {
+                        isResizing = false;
+                        resizer.classList.remove('active');
+                        document.body.style.cursor = '';
+                        
+                        // บันทึกขนาดที่ปรับ
+                        localStorage.setItem('htmlTesterEditorWidth', editorWidth);
+                    }
+                });
+                
+                // โหลดขนาดที่บันทึกไว้
+                const savedWidth = localStorage.getItem('htmlTesterEditorWidth');
+                if (savedWidth) {
+                    editorWidth = parseFloat(savedWidth);
+                    editorSection.style.width = `${editorWidth}%`;
+                    previewSection.style.width = `${100 - editorWidth}%`;
+                }
+            }
+            
+            // ตั้งค่า keyboard shortcuts
+            function setupKeyboardShortcuts() {
+                document.addEventListener('keydown', function(e) {
+                    // Ctrl+S เพื่อบันทึก
+                    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                        e.preventDefault();
+                        localStorage.setItem('htmlCodeTester', htmlEditor.value);
+                        showNotification('บันทึกโค้ดแล้ว');
+                    }
+                    
+                    // Ctrl+R เพื่อรันโค้ด
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                        e.preventDefault();
+                        updatePreview();
+                    }
+                    
+                    // Ctrl+D เพื่อสลับธีม
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                        e.preventDefault();
+                        toggleTheme();
+                    }
+                    
+                    // Ctrl+L เพื่อสลับโหมด live
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                        e.preventDefault();
+                        toggleLiveMode();
+                    }
+                });
+            }
+            
+            // ตั้งค่า event listeners
+            function setupEventListeners() {
+                // Live update เมื่อพิมพ์ใน editor
+                htmlEditor.addEventListener('input', function() {
+                    updateLineNumbers();
+                    if (isLiveMode) {
+                        updatePreview();
+                    }
+                });
+                
+                // ปุ่มรันโค้ด
+                runBtn.addEventListener('click', updatePreview);
+                
+                // ปุ่มสลับธีม
+                themeToggle.addEventListener('click', toggleTheme);
+                
+                // ปุ่มสลับโหมด live
+                liveToggle.addEventListener('click', toggleLiveMode);
+                
+                // ปุ่มรีเซ็ต
+                resetBtn.addEventListener('click', resetCode);
+                
+                // เมื่อ editor ได้รับ focus
+                htmlEditor.addEventListener('focus', function() {
+                    this.style.outline = '2px solid #3b82f6';
+                });
+                
+                // เมื่อ editor เสีย focus
+                htmlEditor.addEventListener('blur', function() {
+                    this.style.outline = 'none';
+                });
+                
+                // อัปเดต line numbers เมื่อโหลดหน้า
+                updateLineNumbers();
+            }
+            
+            // เริ่มต้นแอปพลิเคชัน
+            function initApp() {
+                // โหลดธีมที่บันทึกไว้
+                loadTheme();
+                
+                // โหลดโค้ดที่บันทึกไว้
+                loadSavedCode();
+                
+                // ตั้งค่า event listeners
+                setupEventListeners();
+                
+                // ตั้งค่า resizer
+                setupResizer();
+                
+                // ตั้งค่า keyboard shortcuts
+                setupKeyboardShortcuts();
+                
+                // อัปเดต preview ครั้งแรก
+                setTimeout(() => {
+                    updatePreview();
+                    showNotification('ระบบพร้อมใช้งาน! ลองแก้ไขโค้ดเพื่อดูผลลัพธ์');
+                }, 500);
+            }
+            
+            // เรียกใช้ฟังก์ชันเริ่มต้น
+            initApp();
+        });
+    </script>
 </body>
 </html>
