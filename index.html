@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         * {
             box-sizing: border-box;
@@ -255,6 +257,141 @@
             background-color: rgba(59, 130, 246, 0.3);
             transition: background-color 0.3s;
         }
+        
+        /* Language selector */
+        .language-selector {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0;
+            min-width: 150px;
+            display: none;
+            z-index: 100;
+        }
+        
+        .language-dropdown.show {
+            display: block;
+        }
+        
+        .language-option {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .language-option:hover {
+            background-color: #374151;
+        }
+        
+        .language-option.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        /* Preview mode buttons */
+        .preview-modes {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+        
+        .preview-mode-btn {
+            padding: 0.5rem 1rem;
+            background-color: #374151;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .preview-mode-btn:hover {
+            background-color: #4b5563;
+        }
+        
+        .preview-mode-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        /* Screen size modal */
+        .screen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .screen-modal.show {
+            display: flex;
+        }
+        
+        .screen-modal-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: #1f2937;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .screen-modal-header {
+            padding: 1rem;
+            background-color: #111827;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .screen-modal-body {
+            flex: 1;
+            padding: 0.5rem;
+            overflow: auto;
+        }
+        
+        .screen-modal-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+            border-radius: 0.375rem;
+        }
+        
+        .screen-size-info {
+            background-color: #374151;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Code syntax colors */
+        .keyword { color: #ff79c6; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; }
+        .function { color: #50fa7b; }
+        .variable { color: #f8f8f2; }
+        .number { color: #bd93f9; }
+        .operator { color: #ff79c6; }
+        .class-name { color: #8be9fd; }
+        .punctuation { color: #f8f8f2; }
     </style>
 </head>
 <body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800 transition-colors duration-300">
@@ -269,15 +406,37 @@
     <!-- Download Modal -->
     <div id="download-modal" class="modal">
         <div class="modal-content">
-            <h3 class="text-xl font-bold mb-4">ดาวน์โหลดไฟล์ HTML</h3>
+            <h3 class="text-xl font-bold mb-4">ดาวน์โหลดไฟล์โค้ด</h3>
             <div class="mb-6">
                 <label for="filename" class="block mb-2">ชื่อไฟล์:</label>
-                <input type="text" id="filename" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg" value="my-website.html">
-                <p class="text-sm text-gray-400 mt-2">ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ .html</p>
+                <input type="text" id="filename" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg" value="my-code.html">
+                <p class="text-sm text-gray-400 mt-2" id="file-extension">ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ .html</p>
             </div>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-download" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">ยกเลิก</button>
                 <button id="confirm-download" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">ดาวน์โหลด</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Screen Preview Modal -->
+    <div id="screen-modal" class="screen-modal">
+        <div class="screen-modal-content">
+            <div class="screen-modal-header">
+                <div class="flex items-center space-x-4">
+                    <h3 class="text-xl font-bold">หน้าจอใหญ่สำหรับทดสอบ</h3>
+                    <div id="screen-size-display" class="screen-size-info">ขนาด: 100%</div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="mobile-screen" class="preview-mode-btn">มือถือ</button>
+                    <button id="tablet-screen" class="preview-mode-btn">แท็บเล็ต</button>
+                    <button id="desktop-screen" class="preview-mode-btn">เดสก์ท็อป</button>
+                    <button id="full-screen" class="preview-mode-btn">เต็มจอ</button>
+                    <button id="close-screen-modal" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition-colors">ปิด</button>
+                </div>
+            </div>
+            <div class="screen-modal-body">
+                <iframe id="screen-frame" class="screen-modal-frame"></iframe>
             </div>
         </div>
     </div>
@@ -290,13 +449,44 @@
                     <i class="fas fa-code text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold">Live HTML Code Tester</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">ทดสอบโค้ด HTML แบบเรียลไทม์</p>
+                    <h1 class="text-2xl font-bold">Live Code Tester Pro</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">ทดสอบโค้ดหลายภาษาแบบเรียลไทม์</p>
                 </div>
             </div>
             
             <!-- Controls -->
             <div class="flex flex-wrap gap-3 items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm hidden md:block">ภาษา:</span>
+                    <div class="language-selector">
+                        <button id="language-selector-btn" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-code"></i>
+                            <span id="current-language">HTML</span>
+                            <i class="fas fa-chevron-down ml-1"></i>
+                        </button>
+                        <div id="language-dropdown" class="language-dropdown">
+                            <div class="language-option active" data-lang="html">
+                                <i class="fab fa-html5 mr-2 text-orange-500"></i>HTML
+                            </div>
+                            <div class="language-option" data-lang="python">
+                                <i class="fab fa-python mr-2 text-yellow-500"></i>Python
+                            </div>
+                            <div class="language-option" data-lang="csharp">
+                                <i class="fas fa-code mr-2 text-purple-500"></i>C#
+                            </div>
+                            <div class="language-option" data-lang="cpp">
+                                <i class="fas fa-cog mr-2 text-blue-500"></i>C++
+                            </div>
+                            <div class="language-option" data-lang="c">
+                                <i class="fas fa-cog mr-2 text-blue-300"></i>C
+                            </div>
+                            <div class="language-option" data-lang="php">
+                                <i class="fab fa-php mr-2 text-indigo-500"></i>PHP
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex items-center space-x-2">
                     <span class="text-sm hidden md:block">โหมดธีม:</span>
                     <button id="theme-toggle" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
@@ -346,7 +536,7 @@
                 <div class="flex justify-between items-center bg-gray-800 dark:bg-gray-900 px-4 py-3 rounded-t-lg">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-code text-green-500"></i>
-                        <h2 class="font-bold">HTML Editor</h2>
+                        <h2 class="font-bold" id="editor-title">HTML Editor</h2>
                         <span class="text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded">Line Numbers: ON</span>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -365,7 +555,134 @@
                     <div id="line-numbers-container" class="line-numbers">
                         <!-- Line numbers will be generated here -->
                     </div>
-                    <textarea id="html-editor" class="text-editor" spellcheck="false"><!DOCTYPE html>
+                    <textarea id="code-editor" class="text-editor" spellcheck="false" placeholder="เริ่มต้นเขียนโค้ดที่นี่..."></textarea>
+                </div>
+                
+                <!-- Resizer -->
+                <div class="resizer"></div>
+            </div>
+            
+            <!-- Preview Panel -->
+            <div class="preview-section bg-gray-800 dark:bg-gray-700 rounded-lg border border-gray-700">
+                <div class="flex justify-between items-center bg-gray-800 dark:bg-gray-900 px-4 py-3 rounded-t-lg">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-eye text-blue-500"></i>
+                        <h2 class="font-bold">Live Preview</h2>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="preview-modes">
+                            <button id="preview-html" class="preview-mode-btn active">
+                                <i class="fas fa-code"></i> HTML
+                            </button>
+                            <button id="preview-screen" class="preview-mode-btn">
+                                <i class="fas fa-desktop"></i> หน้าจอใหญ่
+                            </button>
+                            <button id="preview-console" class="preview-mode-btn">
+                                <i class="fas fa-terminal"></i> คอนโซล
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-400 ml-4">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span>อัปเดตล่าสุด: <span id="last-update">-</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-1 p-2 overflow-hidden">
+                    <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+                    <div id="console-output" class="preview-frame bg-gray-900 text-gray-200 p-4 font-mono text-sm overflow-auto" style="display: none;">
+                        <div class="mb-2 text-green-400">$ ระบบคอนโซลพร้อมใช้งาน</div>
+                        <div class="mb-2 text-blue-400">$ พิมพ์โค้ดในแถบด้านซ้าย แล้วคลิกปุ่ม "รันโค้ด"</div>
+                        <div id="console-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-4 pt-3 border-t border-gray-700">
+            <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                <div class="mb-2 md:mb-0 text-center md:text-left">
+                    <p><i class="fas fa-code mr-1"></i> Live Code Tester Pro - รองรับ HTML, Python, C#, C++, C, PHP</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-keyboard"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+S</kbd> เพื่อบันทึก</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-bolt"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+R</kbd> เพื่อรันโค้ด</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-expand"></i>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">F11</kbd> เพื่อเต็มจอ</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // เริ่มต้นแอปพลิเคชันเมื่อ DOM โหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            // เก็บ reference ไปยัง element สำคัญ
+            const codeEditor = document.getElementById('code-editor');
+            const previewFrame = document.getElementById('preview-frame');
+            const screenFrame = document.getElementById('screen-frame');
+            const lineNumbersContainer = document.getElementById('line-numbers-container');
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeText = document.getElementById('theme-text');
+            const liveToggle = document.getElementById('live-toggle');
+            const liveText = document.getElementById('live-text');
+            const liveIndicator = document.getElementById('live-indicator');
+            const liveStatusText = document.getElementById('live-status-text');
+            const runBtn = document.getElementById('run-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const lastUpdateEl = document.getElementById('last-update');
+            const resizer = document.querySelector('.resizer');
+            const editorSection = document.querySelector('.editor-section');
+            const previewSection = document.querySelector('.preview-section');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            const downloadModal = document.getElementById('download-modal');
+            const filenameInput = document.getElementById('filename');
+            const fileExtensionText = document.getElementById('file-extension');
+            const confirmDownloadBtn = document.getElementById('confirm-download');
+            const cancelDownloadBtn = document.getElementById('cancel-download');
+            const screenModal = document.getElementById('screen-modal');
+            const screenSizeDisplay = document.getElementById('screen-size-display');
+            const closeScreenModal = document.getElementById('close-screen-modal');
+            const mobileScreenBtn = document.getElementById('mobile-screen');
+            const tabletScreenBtn = document.getElementById('tablet-screen');
+            const desktopScreenBtn = document.getElementById('desktop-screen');
+            const fullScreenBtn = document.getElementById('full-screen');
+            const languageSelectorBtn = document.getElementById('language-selector-btn');
+            const languageDropdown = document.getElementById('language-dropdown');
+            const currentLanguageEl = document.getElementById('current-language');
+            const editorTitle = document.getElementById('editor-title');
+            const previewHtmlBtn = document.getElementById('preview-html');
+            const previewScreenBtn = document.getElementById('preview-screen');
+            const previewConsoleBtn = document.getElementById('preview-console');
+            const consoleOutput = document.getElementById('console-output');
+            const consoleContent = document.getElementById('console-content');
+            
+            // ตัวแปรสถานะ
+            let isLiveMode = true;
+            let isDarkMode = true;
+            let isResizing = false;
+            let isFullscreen = false;
+            let editorWidth = 50; // เปอร์เซ็นต์
+            let currentLine = 1;
+            let currentLanguage = 'html';
+            let currentPreviewMode = 'html'; // 'html', 'screen', 'console'
+            let currentScreenSize = 'desktop';
+            
+            // ตัวอย่างโค้ดสำหรับแต่ละภาษา
+            const codeExamples = {
+                html: `<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -585,19 +902,19 @@
         function incrementCounter() {
             counter++;
             updateCounter();
-            messageElement.textContent = `เพิ่มค่าเป็น ${counter} เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+            messageElement.textContent = \`เพิ่มค่าเป็น \${counter} เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
         }
         
         function decrementCounter() {
             counter--;
             updateCounter();
-            messageElement.textContent = `ลดค่าเป็น ${counter} เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+            messageElement.textContent = \`ลดค่าเป็น \${counter} เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
         }
         
         function resetCounter() {
             counter = 0;
             updateCounter();
-            messageElement.textContent = `รีเซ็ตค่าเป็น 0 เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+            messageElement.textContent = \`รีเซ็ตค่าเป็น 0 เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
         }
         
         function updateCounter() {
@@ -617,7 +934,7 @@
             const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
             colorBox.style.backgroundColor = randomColor;
-            messageElement.textContent = `เปลี่ยนสีเป็น ${randomColor} เมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+            messageElement.textContent = \`เปลี่ยนสีเป็น \${randomColor} เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
         }
         
         // เริ่มต้นด้วยสีสุ่ม
@@ -626,101 +943,910 @@
         console.log('ระบบทดสอบพร้อมใช้งาน!');
     </script>
 </body>
-</html></textarea>
-                </div>
+</html>`,
                 
-                <!-- Resizer -->
-                <div class="resizer"></div>
-            </div>
-            
-            <!-- Preview Panel -->
-            <div class="preview-section bg-gray-800 dark:bg-gray-700 rounded-lg border border-gray-700">
-                <div class="flex justify-between items-center bg-gray-800 dark:bg-gray-900 px-4 py-3 rounded-t-lg">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-eye text-blue-500"></i>
-                        <h2 class="font-bold">Live Preview</h2>
-                    </div>
-                    <div class="text-sm text-gray-400">
-                        <i class="fas fa-clock mr-1"></i>
-                        <span>อัปเดตล่าสุด: <span id="last-update">-</span></span>
-                    </div>
-                </div>
-                
-                <div class="flex-1 p-2 overflow-hidden">
-                    <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <footer class="mt-4 pt-3 border-t border-gray-700">
-            <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                <div class="mb-2 md:mb-0 text-center md:text-left">
-                    <p><i class="fas fa-code mr-1"></i> Live HTML Code Tester - ครบเครื่องเรื่องไอที</p>
-                </div>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-keyboard"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+S</kbd> เพื่อบันทึก</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-bolt"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+R</kbd> เพื่อรันโค้ด</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-expand"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">F11</kbd> เพื่อเต็มจอ</span>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
+                python: `# โปรแกรมภาษา Python ตัวอย่าง
+# คำนวณค่า Fibonacci
 
-    <script>
-        // เริ่มต้นแอปพลิเคชันเมื่อ DOM โหลดเสร็จ
-        document.addEventListener('DOMContentLoaded', function() {
-            // เก็บ reference ไปยัง element สำคัญ
-            const htmlEditor = document.getElementById('html-editor');
-            const previewFrame = document.getElementById('preview-frame');
-            const lineNumbersContainer = document.getElementById('line-numbers-container');
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeText = document.getElementById('theme-text');
-            const liveToggle = document.getElementById('live-toggle');
-            const liveText = document.getElementById('live-text');
-            const liveIndicator = document.getElementById('live-indicator');
-            const liveStatusText = document.getElementById('live-status-text');
-            const runBtn = document.getElementById('run-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const downloadBtn = document.getElementById('download-btn');
-            const fullscreenBtn = document.getElementById('fullscreen-btn');
-            const lastUpdateEl = document.getElementById('last-update');
-            const resizer = document.querySelector('.resizer');
-            const editorSection = document.querySelector('.editor-section');
-            const previewSection = document.querySelector('.preview-section');
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notification-text');
-            const downloadModal = document.getElementById('download-modal');
-            const filenameInput = document.getElementById('filename');
-            const confirmDownloadBtn = document.getElementById('confirm-download');
-            const cancelDownloadBtn = document.getElementById('cancel-download');
+def fibonacci(n):
+    """ฟังก์ชันคำนวณค่า Fibonacci"""
+    if n <= 0:
+        return []
+    elif n == 1:
+        return [0]
+    elif n == 2:
+        return [0, 1]
+    
+    fib_sequence = [0, 1]
+    for i in range(2, n):
+        fib_sequence.append(fib_sequence[i-1] + fib_sequence[i-2])
+    
+    return fib_sequence
+
+def is_prime(num):
+    """ตรวจสอบว่าตัวเลขเป็นจำนวนเฉพาะหรือไม่"""
+    if num <= 1:
+        return False
+    if num <= 3:
+        return True
+    if num % 2 == 0 or num % 3 == 0:
+        return False
+    
+    i = 5
+    while i * i <= num:
+        if num % i == 0 or num % (i + 2) == 0:
+            return False
+        i += 6
+    
+    return True
+
+def factorial(n):
+    """ฟังก์ชันคำนวณค่าแฟคทอเรียล"""
+    if n < 0:
+        return "ไม่ได้กำหนด"
+    elif n == 0 or n == 1:
+        return 1
+    else:
+        result = 1
+        for i in range(2, n + 1):
+            result *= i
+        return result
+
+# ฟังก์ชันหลัก
+def main():
+    print("=" * 50)
+    print("โปรแกรมภาษา Python ตัวอย่าง")
+    print("=" * 50)
+    
+    # แสดงค่า Fibonacci
+    n = 15
+    fib_numbers = fibonacci(n)
+    print(f"\\nลำดับ Fibonacci จำนวน {n} ตัวแรก:")
+    print(fib_numbers)
+    
+    # ตรวจสอบจำนวนเฉพาะ
+    print("\\nตรวจสอบจำนวนเฉพาะ:")
+    test_numbers = [2, 3, 4, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+    for num in test_numbers:
+        if is_prime(num):
+            print(f"  {num} เป็นจำนวนเฉพาะ")
+        else:
+            print(f"  {num} ไม่เป็นจำนวนเฉพาะ")
+    
+    # คำนวณแฟคทอเรียล
+    print("\\nคำนวณค่าแฟคทอเรียล:")
+    for i in range(1, 11):
+        print(f"  {i}! = {factorial(i)}")
+    
+    # ตัวอย่างการใช้ List Comprehension
+    print("\\nตัวอย่างการใช้ List Comprehension:")
+    squares = [x**2 for x in range(1, 11)]
+    print(f"  เลขยกกำลังสอง 1-10: {squares}")
+    
+    even_numbers = [x for x in range(1, 21) if x % 2 == 0]
+    print(f"  เลขคู่ 1-20: {even_numbers}")
+    
+    # ตัวอย่าง Dictionary
+    print("\\nตัวอย่างการใช้ Dictionary:")
+    student_scores = {
+        "สมชาย": 85,
+        "สมหญิง": 92,
+        "สมหมาย": 78,
+        "สมศรี": 95,
+        "สมาน": 88
+    }
+    
+    for name, score in student_scores.items():
+        grade = "A" if score >= 90 else "B" if score >= 80 else "C" if score >= 70 else "D" if score >= 60 else "F"
+        print(f"  {name}: {score} คะแนน (เกรด {grade})")
+    
+    # ตัวอย่าง Class
+    print("\\nตัวอย่างการใช้ Class:")
+    
+    class Rectangle:
+        def __init__(self, width, height):
+            self.width = width
+            self.height = height
+        
+        def area(self):
+            return self.width * self.height
+        
+        def perimeter(self):
+            return 2 * (self.width + self.height)
+        
+        def is_square(self):
+            return self.width == self.height
+        
+        def __str__(self):
+            return f"สี่เหลี่ยมผืนผ้า กว้าง {self.width} สูง {self.height}"
+    
+    rect1 = Rectangle(5, 10)
+    rect2 = Rectangle(7, 7)
+    
+    print(f"  {rect1}")
+    print(f"    พื้นที่: {rect1.area()}")
+    print(f"    เส้นรอบรูป: {rect1.perimeter()}")
+    print(f"    เป็นสี่เหลี่ยมจัตุรัส: {rect1.is_square()}")
+    
+    print(f"\\n  {rect2}")
+    print(f"    พื้นที่: {rect2.area()}")
+    print(f"    เส้นรอบรูป: {rect2.perimeter()}")
+    print(f"    เป็นสี่เหลี่ยมจัตุรัส: {rect2.is_square()}")
+    
+    print("\\n" + "=" * 50)
+    print("สิ้นสุดโปรแกรมตัวอย่าง")
+    print("=" * 50)
+
+if __name__ == "__main__":
+    main()`,
+                
+                csharp: `using System;
+
+namespace CodeTesterExample
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("================================================");
+            Console.WriteLine("โปรแกรมภาษา C# ตัวอย่าง");
+            Console.WriteLine("================================================");
             
-            // ตัวแปรสถานะ
-            let isLiveMode = true;
-            let isDarkMode = true;
-            let isResizing = false;
-            let isFullscreen = false;
-            let editorWidth = 50; // เปอร์เซ็นต์
-            let currentLine = 1;
+            // ตัวแปรและประเภทข้อมูล
+            int number = 42;
+            double pi = 3.14159;
+            string message = "Hello from C#";
+            bool isReady = true;
+            
+            Console.WriteLine($"\\nตัวแปรตัวอย่าง:");
+            Console.WriteLine($"  จำนวนเต็ม: {number}");
+            Console.WriteLine($"  ทศนิยม: {pi}");
+            Console.WriteLine($"  ข้อความ: {message}");
+            Console.WriteLine($"  บูลีน: {isReady}");
+            
+            // การคำนวณทางคณิตศาสตร์
+            Console.WriteLine("\\nการคำนวณทางคณิตศาสตร์:");
+            int a = 15;
+            int b = 7;
+            
+            Console.WriteLine($"  {a} + {b} = {a + b}");
+            Console.WriteLine($"  {a} - {b} = {a - b}");
+            Console.WriteLine($"  {a} * {b} = {a * b}");
+            Console.WriteLine($"  {a} / {b} = {(double)a / b:F2}");
+            Console.WriteLine($"  {a} % {b} = {a % b}");
+            
+            // คำสั่งเงื่อนไข
+            Console.WriteLine("\\nคำสั่งเงื่อนไข:");
+            int score = 85;
+            
+            if (score >= 90)
+            {
+                Console.WriteLine($"  คะแนน {score}: เกรด A");
+            }
+            else if (score >= 80)
+            {
+                Console.WriteLine($"  คะแนน {score}: เกรด B");
+            }
+            else if (score >= 70)
+            {
+                Console.WriteLine($"  คะแนน {score}: เกรด C");
+            }
+            else if (score >= 60)
+            {
+                Console.WriteLine($"  คะแนน {score}: เกรด D");
+            }
+            else
+            {
+                Console.WriteLine($"  คะแนน {score}: เกรด F");
+            }
+            
+            // การวนลูป
+            Console.WriteLine("\\nการวนลูป:");
+            
+            Console.WriteLine("  ลูป for (1-10):");
+            for (int i = 1; i <= 10; i++)
+            {
+                Console.Write($"  {i} ");
+            }
+            Console.WriteLine();
+            
+            Console.WriteLine("\\n  ลูป while (เลขคู่ 1-20):");
+            int counter = 1;
+            while (counter <= 20)
+            {
+                if (counter % 2 == 0)
+                {
+                    Console.Write($"  {counter} ");
+                }
+                counter++;
+            }
+            Console.WriteLine();
+            
+            // อาร์เรย์
+            Console.WriteLine("\\nการใช้อาร์เรย์:");
+            int[] numbers = { 10, 20, 30, 40, 50 };
+            
+            Console.Write("  องค์ประกอบอาร์เรย์: ");
+            foreach (int num in numbers)
+            {
+                Console.Write($"{num} ");
+            }
+            Console.WriteLine();
+            
+            // ตัวอย่าง Class
+            Console.WriteLine("\\nตัวอย่าง Class:");
+            
+            Person person1 = new Person("สมชาย", 25);
+            Person person2 = new Person("สมหญิง", 30);
+            
+            person1.Introduce();
+            person2.Introduce();
+            
+            // ตัวอย่าง Method
+            Console.WriteLine("\\nตัวอย่าง Method:");
+            
+            int result = CalculateFactorial(5);
+            Console.WriteLine($"  5! = {result}");
+            
+            Console.WriteLine("\\n" + "================================================");
+            Console.WriteLine("สิ้นสุดโปรแกรมตัวอย่าง");
+            Console.WriteLine("================================================");
+        }
+        
+        static int CalculateFactorial(int n)
+        {
+            if (n <= 1)
+                return 1;
+            
+            int result = 1;
+            for (int i = 2; i <= n; i++)
+            {
+                result *= i;
+            }
+            return result;
+        }
+    }
+    
+    class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        
+        public Person(string name, int age)
+        {
+            Name = name;
+            Age = age;
+        }
+        
+        public void Introduce()
+        {
+            Console.WriteLine($"  สวัสดีฉันชื่อ {Name} อายุ {Age} ปี");
+        }
+    }
+}`,
+                
+                cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// ฟังก์ชันคำนวณค่า Fibonacci
+vector<int> fibonacci(int n) {
+    vector<int> fib_sequence;
+    
+    if (n <= 0) return fib_sequence;
+    if (n >= 1) fib_sequence.push_back(0);
+    if (n >= 2) fib_sequence.push_back(1);
+    
+    for (int i = 2; i < n; i++) {
+        fib_sequence.push_back(fib_sequence[i-1] + fib_sequence[i-2]);
+    }
+    
+    return fib_sequence;
+}
+
+// ฟังก์ชันตรวจสอบจำนวนเฉพาะ
+bool isPrime(int num) {
+    if (num <= 1) return false;
+    if (num <= 3) return true;
+    if (num % 2 == 0 || num % 3 == 0) return false;
+    
+    for (int i = 5; i * i <= num; i += 6) {
+        if (num % i == 0 || num % (i + 2) == 0) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// คลาสตัวอย่าง
+class Rectangle {
+private:
+    double width;
+    double height;
+    
+public:
+    // Constructor
+    Rectangle(double w, double h) : width(w), height(h) {}
+    
+    // Getter methods
+    double getWidth() const { return width; }
+    double getHeight() const { return height; }
+    
+    // Setter methods
+    void setWidth(double w) { width = w; }
+    void setHeight(double h) { height = h; }
+    
+    // Calculate area
+    double area() const {
+        return width * height;
+    }
+    
+    // Calculate perimeter
+    double perimeter() const {
+        return 2 * (width + height);
+    }
+    
+    // Check if square
+    bool isSquare() const {
+        return width == height;
+    }
+    
+    // Display rectangle info
+    void display() const {
+        cout << "  สี่เหลี่ยมผืนผ้า กว้าง: " << width << " สูง: " << height << endl;
+        cout << "    พื้นที่: " << area() << endl;
+        cout << "    เส้นรอบรูป: " << perimeter() << endl;
+        cout << "    เป็นสี่เหลี่ยมจัตุรัส: " << (isSquare() ? "ใช่" : "ไม่ใช่") << endl;
+    }
+};
+
+int main() {
+    cout << "================================================" << endl;
+    cout << "โปรแกรมภาษา C++ ตัวอย่าง" << endl;
+    cout << "================================================" << endl << endl;
+    
+    // ตัวแปรพื้นฐาน
+    int number = 42;
+    double pi = 3.14159;
+    string message = "Hello from C++";
+    bool isReady = true;
+    
+    cout << "ตัวแปรตัวอย่าง:" << endl;
+    cout << "  จำนวนเต็ม: " << number << endl;
+    cout << "  ทศนิยม: " << pi << endl;
+    cout << "  ข้อความ: " << message << endl;
+    cout << "  บูลีน: " << (isReady ? "true" : "false") << endl;
+    
+    // การคำนวณ
+    cout << endl << "การคำนวณทางคณิตศาสตร์:" << endl;
+    int a = 15, b = 7;
+    
+    cout << "  " << a << " + " << b << " = " << a + b << endl;
+    cout << "  " << a << " - " << b << " = " << a - b << endl;
+    cout << "  " << a << " * " << b << " = " << a * b << endl;
+    cout << "  " << a << " / " << b << " = " << static_cast<double>(a) / b << endl;
+    cout << "  " << a << " % " << b << " = " << a % b << endl;
+    
+    // คำสั่งเงื่อนไข
+    cout << endl << "คำสั่งเงื่อนไข:" << endl;
+    int score = 85;
+    
+    if (score >= 90) {
+        cout << "  คะแนน " << score << ": เกรด A" << endl;
+    } else if (score >= 80) {
+        cout << "  คะแนน " << score << ": เกรด B" << endl;
+    } else if (score >= 70) {
+        cout << "  คะแนน " << score << ": เกรด C" << endl;
+    } else if (score >= 60) {
+        cout << "  คะแนน " << score << ": เกรด D" << endl;
+    } else {
+        cout << "  คะแนน " << score << ": เกรด F" << endl;
+    }
+    
+    // การวนลูป
+    cout << endl << "การวนลูป:" << endl;
+    
+    cout << "  ลูป for (1-10):" << endl;
+    cout << "  ";
+    for (int i = 1; i <= 10; i++) {
+        cout << i << " ";
+    }
+    cout << endl;
+    
+    cout << endl << "  ลูป while (เลขคี่ 1-20):" << endl;
+    cout << "  ";
+    int counter = 1;
+    while (counter <= 20) {
+        if (counter % 2 != 0) {
+            cout << counter << " ";
+        }
+        counter++;
+    }
+    cout << endl;
+    
+    // อาร์เรย์และ vector
+    cout << endl << "อาร์เรย์และ vector:" << endl;
+    
+    int arr[] = {10, 20, 30, 40, 50};
+    cout << "  อาร์เรย์: ";
+    for (int i = 0; i < 5; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+    
+    vector<int> fib_numbers = fibonacci(15);
+    cout << "  Fibonacci 15 ตัวแรก: ";
+    for (int num : fib_numbers) {
+        cout << num << " ";
+    }
+    cout << endl;
+    
+    // จำนวนเฉพาะ
+    cout << endl << "ตรวจสอบจำนวนเฉพาะ:" << endl;
+    vector<int> test_primes = {2, 3, 4, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
+    for (int num : test_primes) {
+        cout << "  " << num << ": " << (isPrime(num) ? "เป็นจำนวนเฉพาะ" : "ไม่เป็นจำนวนเฉพาะ") << endl;
+    }
+    
+    // ตัวอย่าง Class
+    cout << endl << "ตัวอย่าง Class:" << endl;
+    
+    Rectangle rect1(5.0, 10.0);
+    Rectangle rect2(7.5, 7.5);
+    
+    rect1.display();
+    cout << endl;
+    rect2.display();
+    
+    // พอยน์เตอร์เบื้องต้น
+    cout << endl << "พอยน์เตอร์เบื้องต้น:" << endl;
+    int x = 100;
+    int* ptr = &x;
+    
+    cout << "  ค่าของ x: " << x << endl;
+    cout << "  ที่อยู่ของ x: " << &x << endl;
+    cout << "  ค่าของ ptr (ที่อยู่ของ x): " << ptr << endl;
+    cout << "  ค่าที่ ptr ชี้ไป: " << *ptr << endl;
+    
+    cout << endl << "================================================" << endl;
+    cout << "สิ้นสุดโปรแกรมตัวอย่าง" << endl;
+    cout << "================================================" << endl;
+    
+    return 0;
+}`,
+                
+                c: `#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+
+// ฟังก์ชันคำนวณค่า Fibonacci
+void fibonacci(int n) {
+    if (n <= 0) return;
+    
+    int first = 0, second = 1, next;
+    
+    printf("  Fibonacci %d ตัวแรก: ", n);
+    
+    for (int i = 0; i < n; i++) {
+        if (i <= 1) {
+            next = i;
+        } else {
+            next = first + second;
+            first = second;
+            second = next;
+        }
+        printf("%d ", next);
+    }
+    printf("\\n");
+}
+
+// ฟังก์ชันตรวจสอบจำนวนเฉพาะ
+bool is_prime(int num) {
+    if (num <= 1) return false;
+    if (num <= 3) return true;
+    if (num % 2 == 0 || num % 3 == 0) return false;
+    
+    for (int i = 5; i * i <= num; i += 6) {
+        if (num % i == 0 || num % (i + 2) == 0) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// ฟังก์ชันคำนวณค่าแฟคทอเรียล
+int factorial(int n) {
+    if (n < 0) return -1; // Error
+    if (n == 0 || n == 1) return 1;
+    
+    int result = 1;
+    for (int i = 2; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+// ฟังก์ชันคำนวณพื้นที่วงกลม
+double circle_area(double radius) {
+    return M_PI * radius * radius;
+}
+
+// ฟังก์ชันคำนวณเส้นรอบวงกลม
+double circle_circumference(double radius) {
+    return 2 * M_PI * radius;
+}
+
+// โครงสร้างข้อมูลตัวอย่าง
+struct Rectangle {
+    double width;
+    double height;
+};
+
+// ฟังก์ชันคำนวณพื้นที่สี่เหลี่ยม
+double rectangle_area(struct Rectangle rect) {
+    return rect.width * rect.height;
+}
+
+// ฟังก์ชันคำนวณเส้นรอบรูปสี่เหลี่ยม
+double rectangle_perimeter(struct Rectangle rect) {
+    return 2 * (rect.width + rect.height);
+}
+
+int main() {
+    printf("================================================");
+    printf("\\nโปรแกรมภาษา C ตัวอย่าง\\n");
+    printf("================================================\\n\\n");
+    
+    // ตัวแปรพื้นฐาน
+    int number = 42;
+    float pi = 3.14159;
+    double precise_pi = 3.141592653589793;
+    char grade = 'A';
+    char message[] = "Hello from C";
+    bool is_ready = true;
+    
+    printf("ตัวแปรตัวอย่าง:\\n");
+    printf("  จำนวนเต็ม: %d\\n", number);
+    printf("  float: %.5f\\n", pi);
+    printf("  double: %.15f\\n", precise_pi);
+    printf("  อักขระ: %c\\n", grade);
+    printf("  สตริง: %s\\n", message);
+    printf("  บูลีน: %s\\n", is_ready ? "true" : "false");
+    
+    // การคำนวณ
+    printf("\\nการคำนวณทางคณิตศาสตร์:\\n");
+    int a = 15, b = 7;
+    
+    printf("  %d + %d = %d\\n", a, b, a + b);
+    printf("  %d - %d = %d\\n", a, b, a - b);
+    printf("  %d * %d = %d\\n", a, b, a * b);
+    printf("  %d / %d = %.2f\\n", a, b, (double)a / b);
+    printf("  %d %% %d = %d\\n", a, b, a % b);
+    
+    // คำสั่งเงื่อนไข
+    printf("\\nคำสั่งเงื่อนไข:\\n");
+    int score = 85;
+    
+    if (score >= 90) {
+        printf("  คะแนน %d: เกรด A\\n", score);
+    } else if (score >= 80) {
+        printf("  คะแนน %d: เกรด B\\n", score);
+    } else if (score >= 70) {
+        printf("  คะแนน %d: เกรด C\\n", score);
+    } else if (score >= 60) {
+        printf("  คะแนน %d: เกรด D\\n", score);
+    } else {
+        printf("  คะแนน %d: เกรด F\\n", score);
+    }
+    
+    // การวนลูป
+    printf("\\nการวนลูป:\\n");
+    
+    printf("  ลูป for (1-10):\\n  ");
+    for (int i = 1; i <= 10; i++) {
+        printf("%d ", i);
+    }
+    printf("\\n");
+    
+    printf("\\n  ลูป do-while (1-5):\\n  ");
+    int counter = 1;
+    do {
+        printf("%d ", counter);
+        counter++;
+    } while (counter <= 5);
+    printf("\\n");
+    
+    // อาร์เรย์
+    printf("\\nอาร์เรย์:\\n");
+    int numbers[] = {10, 20, 30, 40, 50};
+    int size = sizeof(numbers) / sizeof(numbers[0]);
+    
+    printf("  องค์ประกอบอาร์เรย์: ");
+    for (int i = 0; i < size; i++) {
+        printf("%d ", numbers[i]);
+    }
+    printf("\\n");
+    
+    // ฟังก์ชันต่างๆ
+    printf("\\nการใช้ฟังก์ชัน:\\n");
+    
+    fibonacci(15);
+    
+    printf("\\n  ตรวจสอบจำนวนเฉพาะ:\\n");
+    int test_numbers[] = {2, 3, 4, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
+    int test_size = sizeof(test_numbers) / sizeof(test_numbers[0]);
+    
+    for (int i = 0; i < test_size; i++) {
+        printf("    %d: %s\\n", test_numbers[i], 
+               is_prime(test_numbers[i]) ? "เป็นจำนวนเฉพาะ" : "ไม่เป็นจำนวนเฉพาะ");
+    }
+    
+    printf("\\n  ค่าแฟคทอเรียล:\\n");
+    for (int i = 1; i <= 10; i++) {
+        printf("    %d! = %d\\n", i, factorial(i));
+    }
+    
+    // ตัวอย่างโครงสร้างข้อมูล
+    printf("\\nตัวอย่างโครงสร้างข้อมูล:\\n");
+    struct Rectangle rect = {5.0, 10.0};
+    
+    printf("  สี่เหลี่ยมผืนผ้า กว้าง: %.1f สูง: %.1f\\n", rect.width, rect.height);
+    printf("    พื้นที่: %.2f\\n", rectangle_area(rect));
+    printf("    เส้นรอบรูป: %.2f\\n", rectangle_perimeter(rect));
+    
+    // พอยน์เตอร์
+    printf("\\nพอยน์เตอร์:\\n");
+    int x = 100;
+    int *ptr = &x;
+    
+    printf("  ค่าของ x: %d\\n", x);
+    printf("  ที่อยู่ของ x: %p\\n", (void*)&x);
+    printf("  ค่าของ ptr: %p\\n", (void*)ptr);
+    printf("  ค่าที่ ptr ชี้ไป: %d\\n", *ptr);
+    
+    // การคำนวณวงกลม
+    printf("\\nการคำนวณวงกลม:\\n");
+    double radius = 7.5;
+    printf("  รัศมีวงกลม: %.2f\\n", radius);
+    printf("    พื้นที่วงกลม: %.2f\\n", circle_area(radius));
+    printf("    เส้นรอบวง: %.2f\\n", circle_circumference(radius));
+    
+    printf("\\n================================================");
+    printf("\\nสิ้นสุดโปรแกรมตัวอย่าง\\n");
+    printf("================================================\\n");
+    
+    return 0;
+}`,
+                
+                php: `<?php
+// โปรแกรมภาษา PHP ตัวอย่าง
+// แสดงข้อมูลการทดสอบ
+
+echo "================================================";
+echo "\\nโปรแกรมภาษา PHP ตัวอย่าง\\n";
+echo "================================================";
+echo "\\n\\n";
+
+// ตัวแปรและประเภทข้อมูล
+$number = 42;
+$pi = 3.14159;
+$message = "Hello from PHP";
+$isReady = true;
+$colors = array("แดง", "เขียว", "น้ำเงิน", "เหลือง", "ม่วง");
+
+echo "ตัวแปรตัวอย่าง:\\n";
+echo "  จำนวนเต็ม: $number\\n";
+echo "  ทศนิยม: $pi\\n";
+echo "  ข้อความ: $message\\n";
+echo "  บูลีน: " . ($isReady ? "true" : "false") . "\\n";
+
+// การคำนวณ
+echo "\\nการคำนวณทางคณิตศาสตร์:\\n";
+$a = 15;
+$b = 7;
+
+echo "  $a + $b = " . ($a + $b) . "\\n";
+echo "  $a - $b = " . ($a - $b) . "\\n";
+echo "  $a * $b = " . ($a * $b) . "\\n";
+echo "  $a / $b = " . ($a / $b) . "\\n";
+echo "  $a % $b = " . ($a % $b) . "\\n";
+
+// คำสั่งเงื่อนไข
+echo "\\nคำสั่งเงื่อนไข:\\n";
+$score = 85;
+
+if ($score >= 90) {
+    echo "  คะแนน $score: เกรด A\\n";
+} elseif ($score >= 80) {
+    echo "  คะแนน $score: เกรด B\\n";
+} elseif ($score >= 70) {
+    echo "  คะแนน $score: เกรด C\\n";
+} elseif ($score >= 60) {
+    echo "  คะแนน $score: เกรด D\\n";
+} else {
+    echo "  คะแนน $score: เกรด F\\n";
+}
+
+// การวนลูป
+echo "\\nการวนลูป:\\n";
+
+echo "  ลูป for (1-10):\\n  ";
+for ($i = 1; $i <= 10; $i++) {
+    echo "$i ";
+}
+echo "\\n";
+
+echo "\\n  ลูป foreach (สีต่างๆ):\\n  ";
+foreach ($colors as $color) {
+    echo "$color ";
+}
+echo "\\n";
+
+// ฟังก์ชัน
+echo "\\nการใช้ฟังก์ชัน:\\n";
+
+function fibonacci($n) {
+    if ($n <= 0) return array();
+    if ($n == 1) return array(0);
+    if ($n == 2) return array(0, 1);
+    
+    $fib_sequence = array(0, 1);
+    for ($i = 2; $i < $n; $i++) {
+        $fib_sequence[] = $fib_sequence[$i-1] + $fib_sequence[$i-2];
+    }
+    
+    return $fib_sequence;
+}
+
+function is_prime($num) {
+    if ($num <= 1) return false;
+    if ($num <= 3) return true;
+    if ($num % 2 == 0 || $num % 3 == 0) return false;
+    
+    for ($i = 5; $i * $i <= $num; $i += 6) {
+        if ($num % $i == 0 || $num % ($i + 2) == 0) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// แสดงค่า Fibonacci
+$fib_numbers = fibonacci(15);
+echo "  Fibonacci 15 ตัวแรก: " . implode(" ", $fib_numbers) . "\\n";
+
+// ตรวจสอบจำนวนเฉพาะ
+echo "\\n  ตรวจสอบจำนวนเฉพาะ:\\n";
+$test_numbers = array(2, 3, 4, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37);
+foreach ($test_numbers as $num) {
+    echo "    $num: " . (is_prime($num) ? "เป็นจำนวนเฉพาะ" : "ไม่เป็นจำนวนเฉพาะ") . "\\n";
+}
+
+// อาร์เรย์เชื่อมโยง
+echo "\\nอาร์เรย์เชื่อมโยง:\\n";
+$student_scores = array(
+    "สมชาย" => 85,
+    "สมหญิง" => 92,
+    "สมหมาย" => 78,
+    "สมศรี" => 95,
+    "สมาน" => 88
+);
+
+foreach ($student_scores as $name => $score) {
+    $grade = "";
+    if ($score >= 90) $grade = "A";
+    elseif ($score >= 80) $grade = "B";
+    elseif ($score >= 70) $grade = "C";
+    elseif ($score >= 60) $grade = "D";
+    else $grade = "F";
+    
+    echo "  $name: $score คะแนน (เกรด $grade)\\n";
+}
+
+// คลาสและออบเจ็กต์
+echo "\\nตัวอย่างคลาสและออบเจ็กต์:\\n";
+
+class Person {
+    private $name;
+    private $age;
+    
+    public function __construct($name, $age) {
+        $this->name = $name;
+        $this->age = $age;
+    }
+    
+    public function introduce() {
+        echo "  สวัสดีฉันชื่อ {$this->name} อายุ {$this->age} ปี\\n";
+    }
+    
+    public function getName() {
+        return $this->name;
+    }
+    
+    public function getAge() {
+        return $this->age;
+    }
+    
+    public function setName($name) {
+        $this->name = $name;
+    }
+    
+    public function setAge($age) {
+        $this->age = $age;
+    }
+}
+
+$person1 = new Person("สมชาย", 25);
+$person2 = new Person("สมหญิง", 30);
+
+$person1->introduce();
+$person2->introduce();
+
+// การทำงานกับวันที่และเวลา
+echo "\\nวันที่และเวลา:\\n";
+$current_date = date("Y-m-d");
+$current_time = date("H:i:s");
+$current_datetime = date("Y-m-d H:i:s");
+
+echo "  วันที่ปัจจุบัน: $current_date\\n";
+echo "  เวลาปัจจุบัน: $current_time\\n";
+echo "  วันที่และเวลาปัจจุบัน: $current_datetime\\n";
+
+// การทำงานกับไฟล์
+echo "\\nการทำงานกับไฟล์:\\n";
+$file_content = "<?php\\n// นี่คือไฟล์ตัวอย่างที่สร้างด้วย PHP\\necho 'Hello from PHP file!';\\n?>";
+$filename = "example.php";
+
+// เขียนไฟล์
+file_put_contents($filename, $file_content);
+echo "  สร้างไฟล์ $filename สำเร็จ\\n";
+
+// อ่านไฟล์
+$read_content = file_get_contents($filename);
+echo "  อ่านไฟล์ $filename:\\n";
+echo "  " . str_replace("\\n", "\\n  ", $read_content) . "\\n";
+
+// ลบไฟล์
+unlink($filename);
+echo "  ลบไฟล์ $filename สำเร็จ\\n";
+
+echo "\\n================================================";
+echo "\\nสิ้นสุดโปรแกรมตัวอย่าง\\n";
+echo "================================================\\n";
+
+?>`
+            };
+            
+            // ขยายข้อมูลภาษา
+            const languageInfo = {
+                html: { name: "HTML", extension: ".html", icon: "fab fa-html5", color: "text-orange-500" },
+                python: { name: "Python", extension: ".py", icon: "fab fa-python", color: "text-yellow-500" },
+                csharp: { name: "C#", extension: ".cs", icon: "fas fa-code", color: "text-purple-500" },
+                cpp: { name: "C++", extension: ".cpp", icon: "fas fa-cog", color: "text-blue-500" },
+                c: { name: "C", extension: ".c", icon: "fas fa-cog", color: "text-blue-300" },
+                php: { name: "PHP", extension: ".php", icon: "fab fa-php", color: "text-indigo-500" }
+            };
             
             // โหลดโค้ดที่บันทึกไว้ (ถ้ามี)
             function loadSavedCode() {
                 try {
-                    const savedCode = localStorage.getItem('htmlCodeTester');
+                    const savedCode = localStorage.getItem(`codeTester_${currentLanguage}`);
                     if (savedCode) {
-                        htmlEditor.value = savedCode;
+                        codeEditor.value = savedCode;
                         updatePreview();
                         updateLineNumbers();
-                        showNotification('โหลดโค้ดที่บันทึกไว้สำเร็จ');
+                        showNotification(`โหลดโค้ด ${languageInfo[currentLanguage].name} ที่บันทึกไว้สำเร็จ`);
+                    } else {
+                        // ถ้าไม่มีโค้ดที่บันทึกไว้ ให้ใช้ตัวอย่างโค้ด
+                        codeEditor.value = codeExamples[currentLanguage];
+                        updateLineNumbers();
+                        updatePreview();
                     }
                 } catch (e) {
                     console.error('Error loading saved code:', e);
@@ -730,20 +1856,31 @@
             // อัปเดต preview
             function updatePreview() {
                 try {
-                    const htmlCode = htmlEditor.value;
+                    const code = codeEditor.value;
                     
-                    // สร้างเอกสารใหม่สำหรับ iframe
-                    const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-                    previewDoc.open();
-                    previewDoc.write(htmlCode);
-                    previewDoc.close();
+                    if (currentLanguage === 'html') {
+                        // สำหรับ HTML ให้แสดงใน iframe
+                        const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                        previewDoc.open();
+                        previewDoc.write(code);
+                        previewDoc.close();
+                        
+                        // อัปเดตหน้าจอใหญ่ด้วย (ถ้ากำลังแสดงอยู่)
+                        const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
+                        screenDoc.open();
+                        screenDoc.write(code);
+                        screenDoc.close();
+                    } else {
+                        // สำหรับภาษาอื่นๆ ให้แสดงในคอนโซล
+                        runCodeInConsole();
+                    }
                     
                     // อัปเดตเวลาล่าสุด
                     const now = new Date();
                     lastUpdateEl.textContent = now.toLocaleTimeString('th-TH');
                     
                     // บันทึกลง localStorage
-                    localStorage.setItem('htmlCodeTester', htmlCode);
+                    localStorage.setItem(`codeTester_${currentLanguage}`, code);
                     
                     // แสดงการแจ้งเตือนถ้าไม่ได้อยู่ในโหมด live
                     if (!isLiveMode) {
@@ -755,10 +1892,55 @@
                 }
             }
             
+            // รันโค้ดในคอนโซลจำลอง
+            function runCodeInConsole() {
+                const code = codeEditor.value;
+                consoleContent.innerHTML = '';
+                
+                // เพิ่มข้อความเริ่มต้น
+                const startTime = new Date();
+                const timeStr = startTime.toLocaleTimeString('th-TH');
+                
+                consoleContent.innerHTML += `<div class="mb-2 text-green-400">$ เริ่มรันโค้ด ${languageInfo[currentLanguage].name} เมื่อ ${timeStr}</div>`;
+                consoleContent.innerHTML += `<div class="mb-4 text-blue-400">$ ภาษา: ${languageInfo[currentLanguage].name}</div>`;
+                
+                // จำลองการรันโค้ดตามภาษา
+                if (currentLanguage === 'python') {
+                    consoleContent.innerHTML += `<div class="whitespace-pre-wrap font-mono text-sm">${escapeHtml(code)}</div>`;
+                    consoleContent.innerHTML += `<div class="mt-4 text-yellow-400">$ หมายเหตุ: นี่คือตัวอย่างโค้ด Python สำหรับแสดงผลเท่านั้น</div>`;
+                } else if (currentLanguage === 'csharp') {
+                    consoleContent.innerHTML += `<div class="whitespace-pre-wrap font-mono text-sm">${escapeHtml(code)}</div>`;
+                    consoleContent.innerHTML += `<div class="mt-4 text-yellow-400">$ หมายเหตุ: นี่คือตัวอย่างโค้ด C# สำหรับแสดงผลเท่านั้น</div>`;
+                } else if (currentLanguage === 'cpp') {
+                    consoleContent.innerHTML += `<div class="whitespace-pre-wrap font-mono text-sm">${escapeHtml(code)}</div>`;
+                    consoleContent.innerHTML += `<div class="mt-4 text-yellow-400">$ หมายเหตุ: นี่คือตัวอย่างโค้ด C++ สำหรับแสดงผลเท่านั้น</div>`;
+                } else if (currentLanguage === 'c') {
+                    consoleContent.innerHTML += `<div class="whitespace-pre-wrap font-mono text-sm">${escapeHtml(code)}</div>`;
+                    consoleContent.innerHTML += `<div class="mt-4 text-yellow-400">$ หมายเหตุ: นี่คือตัวอย่างโค้ด C สำหรับแสดงผลเท่านั้น</div>`;
+                } else if (currentLanguage === 'php') {
+                    consoleContent.innerHTML += `<div class="whitespace-pre-wrap font-mono text-sm">${escapeHtml(code)}</div>`;
+                    consoleContent.innerHTML += `<div class="mt-4 text-yellow-400">$ หมายเหตุ: นี่คือตัวอย่างโค้ด PHP สำหรับแสดงผลเท่านั้น</div>`;
+                }
+                
+                const endTime = new Date();
+                const duration = endTime - startTime;
+                consoleContent.innerHTML += `<div class="mt-4 text-green-400">$ รันโค้ดเสร็จสิ้น (ใช้เวลา ${duration}ms)</div>`;
+                
+                // เลื่อนไปที่ด้านล่าง
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            }
+            
+            // ฟังก์ชันแปลง HTML entities
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
             // อัปเดต line numbers
             function updateLineNumbers() {
-                const lines = htmlEditor.value.split('\n').length;
-                const scrollTop = htmlEditor.scrollTop;
+                const lines = codeEditor.value.split('\n').length;
+                const scrollTop = codeEditor.scrollTop;
                 const lineHeight = 21; // ควรตรงกับ line-height ใน CSS
                 
                 // ล้าง line numbers เก่า
@@ -790,7 +1972,7 @@
             
             // ไปยังบรรทัดที่ระบุ
             function goToLine(lineNumber) {
-                const lines = htmlEditor.value.split('\n');
+                const lines = codeEditor.value.split('\n');
                 if (lineNumber < 1 || lineNumber > lines.length) return;
                 
                 // คำนวณตำแหน่ง
@@ -798,7 +1980,7 @@
                 const targetPosition = (lineNumber - 1) * lineHeight;
                 
                 // เลื่อน editor ไปยังตำแหน่งนั้น
-                htmlEditor.scrollTop = targetPosition;
+                codeEditor.scrollTop = targetPosition;
                 
                 // ตั้งค่าเคอร์เซอร์ไปยังต้นบรรทัด
                 let charIndex = 0;
@@ -806,8 +1988,8 @@
                     charIndex += lines[i].length + 1; // +1 สำหรับ newline
                 }
                 
-                htmlEditor.focus();
-                htmlEditor.setSelectionRange(charIndex, charIndex);
+                codeEditor.focus();
+                codeEditor.setSelectionRange(charIndex, charIndex);
                 
                 // อัปเดต current line และไฮไลต์
                 currentLine = lineNumber;
@@ -823,6 +2005,134 @@
                 }
                 
                 showNotification(`ไปยังบรรทัดที่ ${lineNumber}`);
+            }
+            
+            // เปลี่ยนภาษา
+            function changeLanguage(lang) {
+                if (lang === currentLanguage) return;
+                
+                // บันทึกโค้ดปัจจุบันก่อนเปลี่ยนภาษา
+                localStorage.setItem(`codeTester_${currentLanguage}`, codeEditor.value);
+                
+                // อัปเดตภาษาใหม่
+                currentLanguage = lang;
+                const langInfo = languageInfo[lang];
+                
+                // อัปเดต UI
+                currentLanguageEl.textContent = langInfo.name;
+                editorTitle.textContent = `${langInfo.name} Editor`;
+                
+                // อัปเดตไอคอนและสี
+                languageSelectorBtn.innerHTML = `
+                    <i class="${langInfo.icon} ${langInfo.color}"></i>
+                    <span>${langInfo.name}</span>
+                    <i class="fas fa-chevron-down ml-1"></i>
+                `;
+                
+                // อัปเดตตัวเลือกใน dropdown
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.classList.remove('active');
+                    if (option.dataset.lang === lang) {
+                        option.classList.add('active');
+                    }
+                });
+                
+                // โหลดโค้ดสำหรับภาษาใหม่
+                loadSavedCode();
+                
+                // อัปเดต preview mode สำหรับภาษาที่ไม่ใช่ HTML
+                if (lang !== 'html') {
+                    setPreviewMode('console');
+                } else {
+                    setPreviewMode('html');
+                }
+                
+                // อัปเดตชื่อไฟล์ดาวน์โหลด
+                filenameInput.value = `my-code${langInfo.extension}`;
+                fileExtensionText.textContent = `ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ ${langInfo.extension}`;
+                
+                showNotification(`เปลี่ยนภาษาเป็น ${langInfo.name}`);
+            }
+            
+            // ตั้งค่าโหมด preview
+            function setPreviewMode(mode) {
+                currentPreviewMode = mode;
+                
+                // อัปเดตปุ่ม
+                previewHtmlBtn.classList.remove('active');
+                previewScreenBtn.classList.remove('active');
+                previewConsoleBtn.classList.remove('active');
+                
+                // แสดง/ซ่อนส่วนต่างๆ
+                previewFrame.style.display = 'none';
+                consoleOutput.style.display = 'none';
+                
+                if (mode === 'html') {
+                    previewHtmlBtn.classList.add('active');
+                    previewFrame.style.display = 'block';
+                } else if (mode === 'screen') {
+                    previewScreenBtn.classList.add('active');
+                    previewFrame.style.display = 'block';
+                } else if (mode === 'console') {
+                    previewConsoleBtn.classList.add('active');
+                    consoleOutput.style.display = 'block';
+                }
+                
+                // ถ้าเปลี่ยนเป็นโหมดหน้าจอใหญ่ ให้แสดง modal
+                if (mode === 'screen') {
+                    showScreenModal();
+                }
+            }
+            
+            // แสดงหน้าจอใหญ่
+            function showScreenModal() {
+                screenModal.classList.add('show');
+                
+                // อัปเดตขนาดหน้าจอเริ่มต้น
+                updateScreenSize('desktop');
+            }
+            
+            // อัปเดตขนาดหน้าจอ
+            function updateScreenSize(size) {
+                currentScreenSize = size;
+                
+                // อัปเดตปุ่ม
+                mobileScreenBtn.classList.remove('active');
+                tabletScreenBtn.classList.remove('active');
+                desktopScreenBtn.classList.remove('active');
+                fullScreenBtn.classList.remove('active');
+                
+                // ตั้งค่าขนาด
+                const screenBody = document.querySelector('.screen-modal-body');
+                
+                if (size === 'mobile') {
+                    mobileScreenBtn.classList.add('active');
+                    screenBody.style.maxWidth = '375px';
+                    screenBody.style.margin = '0 auto';
+                    screenSizeDisplay.textContent = 'ขนาด: มือถือ (375px)';
+                } else if (size === 'tablet') {
+                    tabletScreenBtn.classList.add('active');
+                    screenBody.style.maxWidth = '768px';
+                    screenBody.style.margin = '0 auto';
+                    screenSizeDisplay.textContent = 'ขนาด: แท็บเล็ต (768px)';
+                } else if (size === 'desktop') {
+                    desktopScreenBtn.classList.add('active');
+                    screenBody.style.maxWidth = '100%';
+                    screenBody.style.margin = '0';
+                    screenSizeDisplay.textContent = 'ขนาด: เดสก์ท็อป (100%)';
+                } else if (size === 'full') {
+                    fullScreenBtn.classList.add('active');
+                    screenBody.style.maxWidth = '100%';
+                    screenBody.style.margin = '0';
+                    screenSizeDisplay.textContent = 'ขนาด: เต็มจอ';
+                }
+                
+                // อัปเดต iframe
+                const code = codeEditor.value;
+                const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
+                screenDoc.open();
+                screenDoc.write(code);
+                screenDoc.close();
             }
             
             // สลับโหมดธีม
@@ -845,13 +2155,13 @@
                 }
                 
                 // บันทึกการตั้งค่า
-                localStorage.setItem('htmlTesterTheme', isDarkMode ? 'dark' : 'light');
+                localStorage.setItem('codeTesterTheme', isDarkMode ? 'dark' : 'light');
                 showNotification('เปลี่ยนโหมดธีมเป็น: ' + (isDarkMode ? 'ดาร์ก' : 'ไลต์'));
             }
             
             // โหลดการตั้งค่าธีมที่บันทึกไว้
             function loadTheme() {
-                const savedTheme = localStorage.getItem('htmlTesterTheme');
+                const savedTheme = localStorage.getItem('codeTesterTheme');
                 if (savedTheme === 'light') {
                     isDarkMode = false;
                     toggleTheme(); // เรียกเพื่อสลับไปยัง light mode
@@ -920,64 +2230,11 @@
             
             // รีเซ็ตโค้ดเป็นค่าเริ่มต้น
             function resetCode() {
-                if (confirm('คุณแน่ใจที่จะรีเซ็ตโค้ดทั้งหมด? การเปลี่ยนแปลงทั้งหมดจะหายไป')) {
-                    // โค้ดเริ่มต้น
-                    const defaultCode = `<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เว็บไซต์ตัวอย่าง</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #4f46e5;
-        }
-        .box {
-            background: #f3f4f6;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        button {
-            background-color: #4f46e5;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #4338ca;
-        }
-    </style>
-</head>
-<body>
-    <h1>ยินดีต้อนรับสู่ HTML Tester</h1>
-    <div class="box">
-        <p>นี่คือตัวอย่างโค้ด HTML พื้นฐาน</p>
-        <p>แก้ไขโค้ดทางด้านซ้ายเพื่อดูการเปลี่ยนแปลง</p>
-    </div>
-    <button onclick="alert('สวัสดีจาก HTML Tester!')">คลิกทดสอบ</button>
-    <p id="time-display"></p>
-    
-    <script>
-        document.getElementById('time-display').textContent = 'เวลา: ' + new Date().toLocaleTimeString('th-TH');
-    <\/script>
-</body>
-</html>`;
-                    
-                    htmlEditor.value = defaultCode;
+                if (confirm(`คุณแน่ใจที่จะรีเซ็ตโค้ด ${languageInfo[currentLanguage].name} ทั้งหมด? การเปลี่ยนแปลงทั้งหมดจะหายไป`)) {
+                    codeEditor.value = codeExamples[currentLanguage];
                     updateLineNumbers();
                     updatePreview();
-                    showNotification('รีเซ็ตโค้ดเป็นค่าเริ่มต้นแล้ว');
+                    showNotification(`รีเซ็ตโค้ด ${languageInfo[currentLanguage].name} เป็นค่าเริ่มต้นแล้ว`);
                 }
             }
             
@@ -993,13 +2250,13 @@
                 downloadModal.classList.remove('show');
             }
             
-            // ดาวน์โหลดไฟล์ HTML
-            function downloadHTML() {
-                const content = htmlEditor.value;
-                const filename = filenameInput.value || 'my-html-file.html';
+            // ดาวน์โหลดไฟล์โค้ด
+            function downloadCode() {
+                const content = codeEditor.value;
+                const filename = filenameInput.value || `my-code${languageInfo[currentLanguage].extension}`;
                 
                 // สร้าง Blob จากเนื้อหา
-                const blob = new Blob([content], { type: 'text/html' });
+                const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 
                 // สร้าง element a สำหรับดาวน์โหลด
@@ -1074,12 +2331,12 @@
                         document.body.style.cursor = '';
                         
                         // บันทึกขนาดที่ปรับ
-                        localStorage.setItem('htmlTesterEditorWidth', editorWidth);
+                        localStorage.setItem('codeTesterEditorWidth', editorWidth);
                     }
                 });
                 
                 // โหลดขนาดที่บันทึกไว้
-                const savedWidth = localStorage.getItem('htmlTesterEditorWidth');
+                const savedWidth = localStorage.getItem('codeTesterEditorWidth');
                 if (savedWidth) {
                     editorWidth = parseFloat(savedWidth);
                     editorSection.style.width = `${editorWidth}%`;
@@ -1089,8 +2346,8 @@
             
             // ตรวจจับบรรทัดปัจจุบันจากตำแหน่งเคอร์เซอร์
             function detectCurrentLine() {
-                const cursorPosition = htmlEditor.selectionStart;
-                const textBeforeCursor = htmlEditor.value.substring(0, cursorPosition);
+                const cursorPosition = codeEditor.selectionStart;
+                const textBeforeCursor = codeEditor.value.substring(0, cursorPosition);
                 const lines = textBeforeCursor.split('\n');
                 currentLine = lines.length;
                 updateLineNumbers();
@@ -1102,7 +2359,7 @@
                     // Ctrl+S เพื่อบันทึก
                     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                         e.preventDefault();
-                        localStorage.setItem('htmlCodeTester', htmlEditor.value);
+                        localStorage.setItem(`codeTester_${currentLanguage}`, codeEditor.value);
                         showNotification('บันทึกโค้ดแล้ว');
                     }
                     
@@ -1139,6 +2396,16 @@
                         }
                     }
                     
+                    // Ctrl+1-6 เพื่อเปลี่ยนภาษา
+                    if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '6') {
+                        e.preventDefault();
+                        const langIndex = parseInt(e.key) - 1;
+                        const langs = ['html', 'python', 'csharp', 'cpp', 'c', 'php'];
+                        if (langs[langIndex]) {
+                            changeLanguage(langs[langIndex]);
+                        }
+                    }
+                    
                     // F11 สำหรับเต็มจอ
                     if (e.key === 'F11') {
                         e.preventDefault();
@@ -1152,17 +2419,17 @@
                 });
                 
                 // ตรวจจับการเลื่อนเมาส์และการกดคีย์ใน editor
-                htmlEditor.addEventListener('click', detectCurrentLine);
-                htmlEditor.addEventListener('keyup', detectCurrentLine);
-                htmlEditor.addEventListener('scroll', function() {
-                    lineNumbersContainer.scrollTop = htmlEditor.scrollTop;
+                codeEditor.addEventListener('click', detectCurrentLine);
+                codeEditor.addEventListener('keyup', detectCurrentLine);
+                codeEditor.addEventListener('scroll', function() {
+                    lineNumbersContainer.scrollTop = codeEditor.scrollTop;
                 });
             }
             
             // ตั้งค่า event listeners
             function setupEventListeners() {
                 // Live update เมื่อพิมพ์ใน editor
-                htmlEditor.addEventListener('input', function() {
+                codeEditor.addEventListener('input', function() {
                     updateLineNumbers();
                     if (isLiveMode) {
                         updatePreview();
@@ -1188,7 +2455,7 @@
                 downloadBtn.addEventListener('click', showDownloadModal);
                 
                 // ปุ่มยืนยันดาวน์โหลด
-                confirmDownloadBtn.addEventListener('click', downloadHTML);
+                confirmDownloadBtn.addEventListener('click', downloadCode);
                 
                 // ปุ่มยกเลิกดาวน์โหลด
                 cancelDownloadBtn.addEventListener('click', hideDownloadModal);
@@ -1203,17 +2470,81 @@
                 // ดาวน์โหลดเมื่อกด Enter ในช่องชื่อไฟล์
                 filenameInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
-                        downloadHTML();
+                        downloadCode();
+                    }
+                });
+                
+                // Language selector
+                languageSelectorBtn.addEventListener('click', function() {
+                    languageDropdown.classList.toggle('show');
+                });
+                
+                // เลือกภาษา
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        const lang = this.dataset.lang;
+                        changeLanguage(lang);
+                        languageDropdown.classList.remove('show');
+                    });
+                });
+                
+                // ปิด language dropdown เมื่อคลิกภายนอก
+                document.addEventListener('click', function(e) {
+                    if (!languageSelectorBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+                        languageDropdown.classList.remove('show');
+                    }
+                });
+                
+                // Preview mode buttons
+                previewHtmlBtn.addEventListener('click', function() {
+                    setPreviewMode('html');
+                });
+                
+                previewScreenBtn.addEventListener('click', function() {
+                    setPreviewMode('screen');
+                });
+                
+                previewConsoleBtn.addEventListener('click', function() {
+                    setPreviewMode('console');
+                });
+                
+                // Screen modal
+                closeScreenModal.addEventListener('click', function() {
+                    screenModal.classList.remove('show');
+                    setPreviewMode('html');
+                });
+                
+                mobileScreenBtn.addEventListener('click', function() {
+                    updateScreenSize('mobile');
+                });
+                
+                tabletScreenBtn.addEventListener('click', function() {
+                    updateScreenSize('tablet');
+                });
+                
+                desktopScreenBtn.addEventListener('click', function() {
+                    updateScreenSize('desktop');
+                });
+                
+                fullScreenBtn.addEventListener('click', function() {
+                    updateScreenSize('full');
+                });
+                
+                // ปิด screen modal เมื่อคลิกภายนอก
+                screenModal.addEventListener('click', function(e) {
+                    if (e.target === screenModal) {
+                        screenModal.classList.remove('show');
+                        setPreviewMode('html');
                     }
                 });
                 
                 // เมื่อ editor ได้รับ focus
-                htmlEditor.addEventListener('focus', function() {
+                codeEditor.addEventListener('focus', function() {
                     this.style.outline = '2px solid #3b82f6';
                 });
                 
                 // เมื่อ editor เสีย focus
-                htmlEditor.addEventListener('blur', function() {
+                codeEditor.addEventListener('blur', function() {
                     this.style.outline = 'none';
                 });
             }
@@ -1223,9 +2554,6 @@
                 // โหลดธีมที่บันทึกไว้
                 loadTheme();
                 
-                // โหลดโค้ดที่บันทึกไว้
-                loadSavedCode();
-                
                 // ตั้งค่า event listeners
                 setupEventListeners();
                 
@@ -1234,6 +2562,9 @@
                 
                 // ตั้งค่า keyboard shortcuts
                 setupKeyboardShortcuts();
+                
+                // โหลดโค้ดเริ่มต้น
+                loadSavedCode();
                 
                 // อัปเดต line numbers ครั้งแรก
                 updateLineNumbers();
