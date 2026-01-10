@@ -536,44 +536,6 @@
             font-size: 0.875rem;
         }
         
-        /* Syntax highlighting for different languages */
-        .keyword { color: #ff79c6; font-weight: bold; }
-        .string { color: #f1fa8c; }
-        .comment { color: #6272a4; font-style: italic; }
-        .function { color: #50fa7b; }
-        .variable { color: #f8f8f2; }
-        .number { color: #bd93f9; }
-        .operator { color: #ff79c6; }
-        .class-name { color: #8be9fd; }
-        .punctuation { color: #f8f8f2; }
-        .preprocessor { color: #ffb86c; }
-        
-        /* Code example selector */
-        .example-selector {
-            position: absolute;
-            top: 10px;
-            right: 70px;
-            z-index: 10;
-        }
-        
-        .example-btn {
-            background-color: #374151;
-            color: #e5e7eb;
-            border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            transition: all 0.2s;
-        }
-        
-        .example-btn:hover {
-            background-color: #4b5563;
-        }
-        
         /* Tab system for output */
         .output-tabs {
             display: flex;
@@ -646,6 +608,18 @@
         
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        
+        /* Custom highlight for line numbers */
+        .line-number.highlight {
+            animation: highlightLine 1s ease;
+            background-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        @keyframes highlightLine {
+            0% { background-color: rgba(59, 130, 246, 0); }
+            50% { background-color: rgba(59, 130, 246, 0.5); }
+            100% { background-color: rgba(59, 130, 246, 0.3); }
         }
     </style>
 </head>
@@ -1051,1526 +1025,192 @@
             let currentLanguage = 'html';
             let currentScreenSize = 'desktop';
             let isRunningCode = false;
+            let runHistory = [];
             
-            // ตัวอย่างโค้ดสำหรับแต่ละภาษา
+            // ตัวอย่างโค้ดสำหรับแต่ละภาษา (ลดขนาดโค้ดตัวอย่างลงเนื่องจากจำกัดพื้นที่)
             const codeExamples = {
                 html: `<!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เว็บไซต์ตัวอย่าง Live Tester</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>ตัวอย่าง HTML</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-            padding: 3rem 2rem;
-            text-align: center;
-        }
-        
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #fbbf24, #f87171);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .content {
-            padding: 3rem 2rem;
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-        
-        .feature {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .feature:hover {
-            transform: translateY(-10px);
-            border-color: #3b82f6;
-            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.2);
-        }
-        
-        .feature i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #3b82f6;
-        }
-        
-        .feature h3 {
-            color: #1e293b;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-        
-        .demo-section {
-            background: #f1f5f9;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-        
-        .counter-box {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            margin: 2rem 0;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .counter {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #3b82f6;
-            margin: 1rem 0;
-        }
-        
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-        
-        .btn {
-            padding: 0.8rem 1.8rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
-        }
-        
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-            background: #f8fafc;
-        }
-        
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #3b82f6;
-            margin-bottom: 1rem;
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-            }
-            
-            .buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
+        body { font-family: Arial; padding: 20px; }
+        h1 { color: blue; }
+        .box { background: #f0f0f0; padding: 20px; margin: 10px 0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Live Code Tester Pro</h1>
-            <p class="subtitle">ทดสอบโค้ด HTML, CSS และ JavaScript แบบเรียลไทม์</p>
-        </header>
-        
-        <div class="content">
-            <div class="features">
-                <div class="feature">
-                    <i class="fas fa-bolt"></i>
-                    <h3>รันโค้ดแบบเรียลไทม์</h3>
-                    <p>เห็นผลลัพธ์ทันทีที่เขียนโค้ด</p>
-                </div>
-                
-                <div class="feature">
-                    <i class="fas fa-code"></i>
-                    <h3>รองรับหลายภาษา</h3>
-                    <p>HTML, CSS, JavaScript, Python, C#, C++, C, PHP</p>
-                </div>
-                
-                <div class="feature">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h3>ตอบสนองทุกอุปกรณ์</h3>
-                    <p>ปรับตัวอัตโนมัติตามขนาดหน้าจอ</p>
-                </div>
-            </div>
-            
-            <div class="demo-section">
-                <h2 style="text-align: center; color: #1e293b; margin-bottom: 1.5rem;">ทดสอบ Interactive Demo</h2>
-                
-                <div class="counter-box">
-                    <h3 style="color: #3b82f6; margin-bottom: 1rem;">ตัวนับแบบอินเทอร์แอคทีฟ</h3>
-                    <div class="counter" id="demo-counter">0</div>
-                    
-                    <div class="buttons">
-                        <button class="btn btn-primary" onclick="incrementCounter()">
-                            <i class="fas fa-plus"></i> เพิ่มค่า
-                        </button>
-                        <button class="btn btn-secondary" onclick="decrementCounter()">
-                            <i class="fas fa-minus"></i> ลดค่า
-                        </button>
-                        <button class="btn btn-danger" onclick="resetCounter()">
-                            <i class="fas fa-redo"></i> รีเซ็ต
-                        </button>
-                    </div>
-                    
-                    <p id="counter-status" style="margin-top: 1rem; color: #64748b;">เริ่มต้นใช้งานตัวนับ</p>
-                </div>
-                
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button class="btn btn-primary" onclick="showCustomAlert()">
-                        <i class="fas fa-exclamation-circle"></i> ทดสอบการแจ้งเตือน
-                    </button>
-                    <button class="btn btn-secondary" onclick="changeTheme()">
-                        <i class="fas fa-palette"></i> เปลี่ยนธีม
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <div class="logo">Live Tester</div>
-            <p>สร้างด้วย ❤️ โดยทีมพัฒนาซอฟต์แวร์</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem;">
-                เวลาเซิร์ฟเวอร์: <span id="server-time">${new Date().toLocaleTimeString('th-TH')}</span>
-            </p>
-        </footer>
+    <h1>สวัสดี Live Code Tester Pro!</h1>
+    <div class="box">
+        <p>นี่คือตัวอย่างโค้ด HTML พื้นฐาน</p>
+        <button onclick="alert('สวัสดีจาก Live Tester!')">คลิกทดสอบ</button>
     </div>
-    
     <script>
-        let counter = 0;
-        const counterElement = document.getElementById('demo-counter');
-        const counterStatus = document.getElementById('counter-status');
-        const serverTimeElement = document.getElementById('server-time');
-        
-        // อัปเดตเวลา
-        function updateTime() {
-            serverTimeElement.textContent = new Date().toLocaleTimeString('th-TH');
-        }
-        setInterval(updateTime, 1000);
-        
-        function incrementCounter() {
-            counter++;
-            updateCounter();
-            counterStatus.textContent = \`เพิ่มค่าเป็น \${counter} เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
-            counterStatus.style.color = '#10b981';
-        }
-        
-        function decrementCounter() {
-            counter--;
-            updateCounter();
-            counterStatus.textContent = \`ลดค่าเป็น \${counter} เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
-            counterStatus.style.color = '#ef4444';
-        }
-        
-        function resetCounter() {
-            counter = 0;
-            updateCounter();
-            counterStatus.textContent = \`รีเซ็ตค่าเป็น 0 เมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
-            counterStatus.style.color = '#3b82f6';
-        }
-        
-        function updateCounter() {
-            counterElement.textContent = counter;
-            
-            // เปลี่ยนสี counter ตามค่า
-            if (counter > 0) {
-                counterElement.style.color = '#10b981';
-            } else if (counter < 0) {
-                counterElement.style.color = '#ef4444';
-            } else {
-                counterElement.style.color = '#3b82f6';
-            }
-        }
-        
-        function showCustomAlert() {
-            // สร้างการแจ้งเตือนที่สวยงามแทน alert ปกติ
-            const alertBox = document.createElement('div');
-            alertBox.style.cssText = \`
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-                color: white;
-                padding: 2rem;
-                border-radius: 15px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                z-index: 1000;
-                text-align: center;
-                max-width: 400px;
-                width: 90%;
-                animation: fadeIn 0.3s ease;
-            \`;
-            
-            alertBox.innerHTML = \`
-                <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">การแจ้งเตือนที่สวยงาม</h3>
-                <p style="margin-bottom: 1.5rem;">นี่คือตัวอย่างการแจ้งเตือนที่ออกแบบให้สวยงามแทนการใช้ alert() ปกติ</p>
-                <button onclick="this.parentElement.remove()" style="
-                    background: white;
-                    color: #3b82f6;
-                    border: none;
-                    padding: 0.8rem 2rem;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                ">ตกลง</button>
-            \`;
-            
-            document.body.appendChild(alertBox);
-            
-            counterStatus.textContent = \`แสดงการแจ้งเตือนเมื่อ \${new Date().toLocaleTimeString('th-TH')}\`;
-            counterStatus.style.color = '#f59e0b';
-        }
-        
-        function changeTheme() {
-            const container = document.querySelector('.container');
-            const isDark = container.style.background.includes('1e293b');
-            
-            if (isDark) {
-                container.style.background = 'white';
-                container.style.color = '#333';
-                counterStatus.textContent = 'เปลี่ยนเป็นธีมสว่าง';
-            } else {
-                container.style.background = '#1e293b';
-                container.style.color = 'white';
-                counterStatus.textContent = 'เปลี่ยนเป็นธีมเข้ม';
-            }
-            
-            counterStatus.style.color = '#8b5cf6';
-        }
-        
-        // เริ่มต้น
-        updateCounter();
-        updateTime();
-        
-        console.log('ระบบตัวอย่าง HTML พร้อมใช้งาน!');
-    </script>
+        console.log("ระบบพร้อมใช้งาน");
+    <\/script>
 </body>
 </html>`,
                 
-                python: `# โปรแกรมภาษา Python ตัวอย่าง
-# แสดงความสามารถของ Python
+                python: `# โปรแกรม Python ตัวอย่าง
+print("=" * 40)
+print("โปรแกรมภาษา Python ตัวอย่าง")
+print("=" * 40)
 
-import random
-import math
-import datetime
-import json
+# ข้อมูลนักเรียน
+students = [
+    {"name": "สมชาย", "age": 18, "grades": [85, 90, 78]},
+    {"name": "สมหญิง", "age": 17, "grades": [95, 92, 98]},
+    {"name": "สมหมาย", "age": 19, "grades": [65, 70, 68]}
+]
 
-class Student:
-    def __init__(self, name, age, grades):
-        self.name = name
-        self.age = age
-        self.grades = grades
-    
-    def average_grade(self):
-        return sum(self.grades) / len(self.grades) if self.grades else 0
-    
-    def get_grade_level(self):
-        avg = self.average_grade()
-        if avg >= 80:
-            return "ดีมาก"
-        elif avg >= 70:
-            return "ดี"
-        elif avg >= 60:
-            return "พอใช้"
-        else:
-            return "ปรับปรุง"
-    
-    def __str__(self):
-        return f"นักเรียน: {self.name}, อายุ: {self.age}, เกรดเฉลี่ย: {self.average_grade():.2f}"
+print("\\nข้อมูลนักเรียน:")
+for student in students:
+    avg = sum(student["grades"]) / len(student["grades"])
+    print(f"{student['name']} (อายุ {student['age']} ปี) - เกรดเฉลี่ย: {avg:.2f}")
 
+# Fibonacci
 def fibonacci(n):
-    """คำนวณลำดับ Fibonacci"""
-    if n <= 0:
-        return []
-    elif n == 1:
-        return [0]
-    elif n == 2:
-        return [0, 1]
-    
-    fib_sequence = [0, 1]
-    for i in range(2, n):
-        fib_sequence.append(fib_sequence[i-1] + fib_sequence[i-2])
-    
-    return fib_sequence
+    a, b = 0, 1
+    result = []
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result
 
-def is_prime(num):
-    """ตรวจสอบว่าตัวเลขเป็นจำนวนเฉพาะหรือไม่"""
-    if num <= 1:
-        return False
-    if num <= 3:
-        return True
-    if num % 2 == 0 or num % 3 == 0:
-        return False
-    
-    i = 5
-    while i * i <= num:
-        if num % i == 0 or num % (i + 2) == 0:
-            return False
-        i += 6
-    
-    return True
+print("\\nลำดับ Fibonacci 10 ตัวแรก:")
+print(fibonacci(10))
 
-def generate_random_data(n):
-    """สร้างข้อมูลสุ่ม"""
-    return [random.randint(1, 100) for _ in range(n)]
-
-def main():
-    print("=" * 60)
-    print("โปรแกรมภาษา Python ตัวอย่าง")
-    print("=" * 60)
-    print(f"วันที่รันโปรแกรม: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-    print()
-    
-    # ข้อมูลนักเรียน
-    students = [
-        Student("สมชาย", 18, [85, 90, 78, 92, 88]),
-        Student("สมหญิง", 17, [95, 92, 98, 90, 96]),
-        Student("สมหมาย", 19, [65, 70, 68, 72, 70]),
-        Student("สมศรี", 18, [55, 60, 58, 62, 65]),
-        Student("สมาน", 17, [45, 50, 48, 52, 55])
-    ]
-    
-    print("ข้อมูลนักเรียน:")
-    print("-" * 50)
-    for student in students:
-        print(f"  {student}")
-        print(f"    ระดับ: {student.get_grade_level()}")
-    print()
-    
-    # Fibonacci
-    fib_count = 15
-    fib_numbers = fibonacci(fib_count)
-    print(f"ลำดับ Fibonacci {fib_count} ตัวแรก:")
-    print(f"  {fib_numbers}")
-    print()
-    
-    # จำนวนเฉพาะ
-    print("ตรวจสอบจำนวนเฉพาะ:")
-    prime_numbers = [num for num in range(1, 31) if is_prime(num)]
-    print(f"  จำนวนเฉพาะ 1-30: {prime_numbers}")
-    print()
-    
-    # สุ่มข้อมูล
-    random_data = generate_random_data(10)
-    print("ข้อมูลสุ่ม 10 ตัว:")
-    print(f"  ข้อมูล: {random_data}")
-    print(f"  ค่าสูงสุด: {max(random_data)}")
-    print(f"  ค่าต่ำสุด: {min(random_data)}")
-    print(f"  ค่าเฉลี่ย: {sum(random_data)/len(random_data):.2f}")
-    print()
-    
-    # การคำนวณทางคณิตศาสตร์
-    print("การคำนวณทางคณิตศาสตร์:")
-    numbers = list(range(1, 11))
-    squares = [x**2 for x in numbers]
-    cubes = [x**3 for x in numbers]
-    
-    print(f"  ตัวเลข: {numbers}")
-    print(f"  ยกกำลังสอง: {squares}")
-    print(f"  ยกกำลังสาม: {cubes}")
-    print()
-    
-    # การใช้งาน dictionary
-    print("ข้อมูล dictionary:")
-    student_dict = {
-        "สมชาย": {"age": 18, "grade": "A"},
-        "สมหญิง": {"age": 17, "grade": "A+"},
-        "สมหมาย": {"age": 19, "grade": "B"}
-    }
-    
-    for name, info in student_dict.items():
-        print(f"  {name}: อายุ {info['age']}, เกรด {info['grade']}")
-    print()
-    
-    # การทำงานกับไฟล์ JSON (จำลอง)
-    print("การทำงานกับ JSON:")
-    data = {
-        "project": "Python Code Tester",
-        "version": "1.0",
-        "languages": ["Python", "JavaScript", "Java"],
-        "features": ["Real-time", "Multi-language", "Interactive"]
-    }
-    
-    json_str = json.dumps(data, indent=2, ensure_ascii=False)
-    print("  ข้อมูล JSON:")
-    for line in json_str.split('\\n'):
-        print(f"    {line}")
-    print()
-    
-    # ฟังก์ชัน lambda
-    print("การใช้ฟังก์ชัน lambda:")
-    numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    even_numbers = list(filter(lambda x: x % 2 == 0, numbers))
-    squared_numbers = list(map(lambda x: x**2, numbers))
-    
-    print(f"  เลขคู่: {even_numbers}")
-    print(f"  ยกกำลังสอง: {squared_numbers}")
-    print()
-    
-    print("=" * 60)
-    print("สิ้นสุดโปรแกรมตัวอย่าง Python")
-    print("=" * 60)
-
-if __name__ == "__main__":
-    main()`,
+print("\\nสิ้นสุดโปรแกรมตัวอย่าง")`,
                 
                 csharp: `using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CodeTesterExample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("========================================================");
-            Console.WriteLine("        โปรแกรมภาษา C# ตัวอย่าง - Code Tester           ");
-            Console.WriteLine("========================================================");
-            Console.ResetColor();
-            Console.WriteLine();
+            Console.WriteLine("========================================");
+            Console.WriteLine("โปรแกรมภาษา C# ตัวอย่าง");
+            Console.WriteLine("========================================\\n");
             
             // ข้อมูลนักเรียน
-            List<Student> students = new List<Student>
-            {
-                new Student("สมชาย", 18, new List<int> {85, 90, 78, 92, 88}),
-                new Student("สมหญิง", 17, new List<int> {95, 92, 98, 90, 96}),
-                new Student("สมหมาย", 19, new List<int> {65, 70, 68, 72, 70}),
-                new Student("สมศรี", 18, new List<int> {55, 60, 58, 62, 65}),
-                new Student("สมาน", 17, new List<int> {45, 50, 48, 52, 55})
-            };
+            string[] students = { "สมชาย", "สมหญิง", "สมหมาย" };
+            int[] ages = { 18, 17, 19 };
+            double[] averages = { 85.5, 92.0, 68.5 };
             
-            // แสดงข้อมูลนักเรียน
-            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("ข้อมูลนักเรียน:");
-            Console.ResetColor();
-            Console.WriteLine(new string('-', 50));
-            
-            foreach (var student in students)
+            for (int i = 0; i < students.Length; i++)
             {
-                Console.WriteLine($"  {student}");
-                Console.WriteLine($"    เกรดเฉลี่ย: {student.AverageGrade:F2}");
-                Console.WriteLine($"    ระดับ: {student.GetGradeLevel()}");
+                Console.WriteLine($"{students[i]} (อายุ {ages[i]} ปี) - เกรดเฉลี่ย: {averages[i]:F1}");
             }
-            Console.WriteLine();
             
-            // Fibonacci Sequence
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("ลำดับ Fibonacci 15 ตัวแรก:");
-            Console.ResetColor();
-            var fibonacci = GenerateFibonacci(15);
-            Console.WriteLine($"  {string.Join(", ", fibonacci)}");
-            Console.WriteLine();
-            
-            // จำนวนเฉพาะ
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("ตรวจสอบจำนวนเฉพาะ 1-30:");
-            Console.ResetColor();
-            var primes = new List<int>();
-            for (int i = 1; i <= 30; i++)
-            {
-                if (IsPrime(i))
-                    primes.Add(i);
-            }
-            Console.WriteLine($"  {string.Join(", ", primes)}");
-            Console.WriteLine();
-            
-            // LINQ Examples
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("ตัวอย่างการใช้ LINQ:");
-            Console.ResetColor();
-            
-            var numbers = Enumerable.Range(1, 20).ToList();
-            
-            // เลขคู่
-            var evenNumbers = numbers.Where(n => n % 2 == 0).ToList();
-            Console.WriteLine($"  เลขคู่ 1-20: {string.Join(", ", evenNumbers)}");
-            
-            // เลขคี่ที่มากกว่า 10
-            var oddGreaterThan10 = numbers.Where(n => n % 2 != 0 && n > 10).ToList();
-            Console.WriteLine($"  เลขคี่ที่มากกว่า 10: {string.Join(", ", oddGreaterThan10)}");
-            
-            // ยกกำลังสอง
-            var squares = numbers.Select(n => n * n).ToList();
-            Console.WriteLine($"  ยกกำลังสอง 1-10: {string.Join(", ", squares.Take(10))}");
-            Console.WriteLine();
-            
-            // การเรียงลำดับ
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("การเรียงลำดับข้อมูล:");
-            Console.ResetColor();
-            
-            var sortedStudents = students.OrderByDescending(s => s.AverageGrade).ToList();
-            Console.WriteLine("  นักเรียนเรียงตามเกรดเฉลี่ย (จากสูงไปต่ำ):");
-            foreach (var student in sortedStudents)
-            {
-                Console.WriteLine($"    {student.Name}: {student.AverageGrade:F2}");
-            }
-            Console.WriteLine();
-            
-            // DateTime Examples
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("การทำงานกับวันที่และเวลา:");
-            Console.ResetColor();
-            
-            DateTime now = DateTime.Now;
-            Console.WriteLine($"  วันที่ปัจจุบัน: {now:dd/MM/yyyy}");
-            Console.WriteLine($"  เวลาปัจจุบัน: {now:HH:mm:ss}");
-            Console.WriteLine($"  วันในสัปดาห์: {now:dddd}");
-            
-            DateTime tomorrow = now.AddDays(1);
-            Console.WriteLine($"  พรุ่งนี้: {tomorrow:dd/MM/yyyy}");
-            Console.WriteLine();
-            
-            // Math Operations
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("การคำนวณทางคณิตศาสตร์:");
-            Console.ResetColor();
-            
-            double radius = 7.5;
-            double area = Math.PI * Math.Pow(radius, 2);
-            double circumference = 2 * Math.PI * radius;
-            
-            Console.WriteLine($"  รัศมีวงกลม: {radius}");
-            Console.WriteLine($"    พื้นที่วงกลม: {area:F2}");
-            Console.WriteLine($"    เส้นรอบวง: {circumference:F2}");
-            Console.WriteLine();
-            
-            // Random Numbers
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("ตัวเลขสุ่ม:");
-            Console.ResetColor();
-            
-            Random random = new Random();
-            var randomNumbers = new List<int>();
+            // Fibonacci
+            Console.WriteLine("\\nลำดับ Fibonacci 10 ตัวแรก:");
+            int a = 0, b = 1;
             for (int i = 0; i < 10; i++)
             {
-                randomNumbers.Add(random.Next(1, 101));
+                Console.Write($"{a} ");
+                int temp = a;
+                a = b;
+                b = temp + b;
             }
             
-            Console.WriteLine($"  ตัวเลขสุ่ม 10 ตัว (1-100): {string.Join(", ", randomNumbers)}");
-            Console.WriteLine($"  ค่าสูงสุด: {randomNumbers.Max()}");
-            Console.WriteLine($"  ค่าต่ำสุด: {randomNumbers.Min()}");
-            Console.WriteLine($"  ค่าเฉลี่ย: {randomNumbers.Average():F2}");
-            Console.WriteLine();
-            
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("========================================================");
-            Console.WriteLine("        สิ้นสุดโปรแกรมตัวอย่าง C#                      ");
-            Console.WriteLine("========================================================");
-            Console.ResetColor();
-        }
-        
-        static List<int> GenerateFibonacci(int n)
-        {
-            var fibonacci = new List<int>();
-            
-            if (n <= 0) return fibonacci;
-            if (n >= 1) fibonacci.Add(0);
-            if (n >= 2) fibonacci.Add(1);
-            
-            for (int i = 2; i < n; i++)
-            {
-                fibonacci.Add(fibonacci[i - 1] + fibonacci[i - 2]);
-            }
-            
-            return fibonacci;
-        }
-        
-        static bool IsPrime(int number)
-        {
-            if (number <= 1) return false;
-            if (number <= 3) return true;
-            if (number % 2 == 0 || number % 3 == 0) return false;
-            
-            for (int i = 5; i * i <= number; i += 6)
-            {
-                if (number % i == 0 || number % (i + 2) == 0)
-                    return false;
-            }
-            
-            return true;
-        }
-    }
-    
-    class Student
-    {
-        public string Name { get; set; }
-        public int Age { get; set; }
-        public List<int> Grades { get; set; }
-        
-        public Student(string name, int age, List<int> grades)
-        {
-            Name = name;
-            Age = age;
-            Grades = grades;
-        }
-        
-        public double AverageGrade
-        {
-            get
-            {
-                if (Grades == null || Grades.Count == 0)
-                    return 0;
-                return Grades.Average();
-            }
-        }
-        
-        public string GetGradeLevel()
-        {
-            double avg = AverageGrade;
-            if (avg >= 80) return "ดีมาก";
-            if (avg >= 70) return "ดี";
-            if (avg >= 60) return "พอใช้";
-            return "ปรับปรุง";
-        }
-        
-        public override string ToString()
-        {
-            return $"นักเรียน: {Name}, อายุ: {Age}";
+            Console.WriteLine("\\n\\nสิ้นสุดโปรแกรมตัวอย่าง");
         }
     }
 }`,
                 
                 cpp: `#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <cmath>
-#include <ctime>
-#include <iomanip>
-
 using namespace std;
 
-// คลาสนักเรียน
-class Student {
-private:
-    string name;
-    int age;
-    vector<int> grades;
-    
-public:
-    // Constructor
-    Student(string n, int a, vector<int> g) : name(n), age(a), grades(g) {}
-    
-    // Getter methods
-    string getName() const { return name; }
-    int getAge() const { return age; }
-    vector<int> getGrades() const { return grades; }
-    
-    // คำนวณเกรดเฉลี่ย
-    double getAverage() const {
-        if (grades.empty()) return 0.0;
-        
-        double sum = 0.0;
-        for (int grade : grades) {
-            sum += grade;
-        }
-        return sum / grades.size();
-    }
-    
-    // ระดับความสำเร็จ
-    string getGradeLevel() const {
-        double avg = getAverage();
-        if (avg >= 80) return "ดีมาก";
-        if (avg >= 70) return "ดี";
-        if (avg >= 60) return "พอใช้";
-        return "ปรับปรุง";
-    }
-    
-    // Display student info
-    void display() const {
-        cout << "  " << name << " (อายุ " << age << " ปี)" << endl;
-        cout << "    เกรดเฉลี่ย: " << fixed << setprecision(2) << getAverage() << endl;
-        cout << "    ระดับ: " << getGradeLevel() << endl;
-    }
-};
-
-// ฟังก์ชันคำนวณ Fibonacci
-vector<int> fibonacci(int n) {
-    vector<int> fib;
-    
-    if (n <= 0) return fib;
-    if (n >= 1) fib.push_back(0);
-    if (n >= 2) fib.push_back(1);
-    
-    for (int i = 2; i < n; i++) {
-        fib.push_back(fib[i-1] + fib[i-2]);
-    }
-    
-    return fib;
-}
-
-// ฟังก์ชันตรวจสอบจำนวนเฉพาะ
-bool isPrime(int num) {
-    if (num <= 1) return false;
-    if (num <= 3) return true;
-    if (num % 2 == 0 || num % 3 == 0) return false;
-    
-    for (int i = 5; i * i <= num; i += 6) {
-        if (num % i == 0 || num % (i + 2) == 0) {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-// ฟังก์ชันแสดงข้อมูล vector
-template<typename T>
-void printVector(const string& label, const vector<T>& vec, int limit = 0) {
-    cout << "  " << label << ": ";
-    
-    int count = (limit > 0 && limit < vec.size()) ? limit : vec.size();
-    for (int i = 0; i < count; i++) {
-        cout << vec[i];
-        if (i < count - 1) cout << ", ";
-    }
-    
-    if (limit > 0 && limit < vec.size()) {
-        cout << ", ...";
-    }
-    cout << endl;
-}
-
 int main() {
-    // ตั้งค่าสีและรูปแบบการแสดงผล
-    cout << "\033[1;36m"; // สี cyan
-    cout << "========================================================" << endl;
-    cout << "        โปรแกรมภาษา C++ ตัวอย่าง - Code Tester          " << endl;
-    cout << "========================================================" << endl;
-    cout << "\033[0m"; // รีเซ็ตสี
-    
-    cout << endl;
+    cout << "========================================" << endl;
+    cout << "โปรแกรมภาษา C++ ตัวอย่าง" << endl;
+    cout << "========================================\\n" << endl;
     
     // ข้อมูลนักเรียน
-    vector<Student> students = {
-        Student("สมชาย", 18, {85, 90, 78, 92, 88}),
-        Student("สมหญิง", 17, {95, 92, 98, 90, 96}),
-        Student("สมหมาย", 19, {65, 70, 68, 72, 70}),
-        Student("สมศรี", 18, {55, 60, 58, 62, 65}),
-        Student("สมาน", 17, {45, 50, 48, 52, 55})
-    };
+    string students[] = {"สมชาย", "สมหญิง", "สมหมาย"};
+    int ages[] = {18, 17, 19};
+    double averages[] = {85.5, 92.0, 68.5};
     
-    // แสดงข้อมูลนักเรียน
-    cout << "\033[1;33mข้อมูลนักเรียน:\033[0m" << endl;
-    cout << string(50, '-') << endl;
-    
-    for (const auto& student : students) {
-        student.display();
-    }
-    cout << endl;
-    
-    // Fibonacci Sequence
-    cout << "\033[1;33mลำดับ Fibonacci 15 ตัวแรก:\033[0m" << endl;
-    vector<int> fibNumbers = fibonacci(15);
-    printVector("Fibonacci", fibNumbers);
-    cout << endl;
-    
-    // จำนวนเฉพาะ
-    cout << "\033[1;33mจำนวนเฉพาะ 1-30:\033[0m" << endl;
-    vector<int> primes;
-    for (int i = 1; i <= 30; i++) {
-        if (isPrime(i)) {
-            primes.push_back(i);
-        }
-    }
-    printVector("จำนวนเฉพาะ", primes);
-    cout << endl;
-    
-    // การทำงานกับตัวเลข
-    cout << "\033[1;33mการทำงานกับตัวเลข:\033[0m" << endl;
-    
-    // สร้าง vector ตัวเลข 1-20
-    vector<int> numbers;
-    for (int i = 1; i <= 20; i++) {
-        numbers.push_back(i);
+    cout << "ข้อมูลนักเรียน:" << endl;
+    for (int i = 0; i < 3; i++) {
+        cout << students[i] << " (อายุ " << ages[i] << " ปี) - เกรดเฉลี่ย: " << averages[i] << endl;
     }
     
-    // เลขคู่
-    vector<int> evenNumbers;
-    copy_if(numbers.begin(), numbers.end(), back_inserter(evenNumbers),
-            [](int n) { return n % 2 == 0; });
-    printVector("เลขคู่ 1-20", evenNumbers, 10);
-    
-    // เลขคี่ที่มากกว่า 10
-    vector<int> oddGreaterThan10;
-    copy_if(numbers.begin(), numbers.end(), back_inserter(oddGreaterThan10),
-            [](int n) { return n % 2 != 0 && n > 10; });
-    printVector("เลขคี่ที่มากกว่า 10", oddGreaterThan10);
-    cout << endl;
-    
-    // การคำนวณทางคณิตศาสตร์
-    cout << "\033[1;33mการคำนวณทางคณิตศาสตร์:\033[0m" << endl;
-    
-    double radius = 7.5;
-    double area = M_PI * radius * radius;
-    double circumference = 2 * M_PI * radius;
-    
-    cout << "  รัศมีวงกลม: " << radius << endl;
-    cout << "    พื้นที่วงกลม: " << fixed << setprecision(2) << area << endl;
-    cout << "    เส้นรอบวง: " << fixed << setprecision(2) << circumference << endl;
-    
-    // ตัวเลขสุ่ม
-    cout << "  ตัวเลขสุ่ม 5 ตัว (1-100): ";
-    srand(time(0));
-    for (int i = 0; i < 5; i++) {
-        cout << (rand() % 100 + 1);
-        if (i < 4) cout << ", ";
+    // Fibonacci
+    cout << "\\nลำดับ Fibonacci 10 ตัวแรก:" << endl;
+    int a = 0, b = 1;
+    for (int i = 0; i < 10; i++) {
+        cout << a << " ";
+        int temp = a;
+        a = b;
+        b = temp + b;
     }
-    cout << endl << endl;
     
-    // การเรียงลำดับนักเรียนตามเกรด
-    cout << "\033[1;33mการเรียงลำดับนักเรียนตามเกรดเฉลี่ย:\033[0m" << endl;
-    
-    // สร้าง vector ใหม่สำหรับการเรียงลำดับ
-    vector<Student> sortedStudents = students;
-    sort(sortedStudents.begin(), sortedStudents.end(),
-        [](const Student& a, const Student& b) {
-            return a.getAverage() > b.getAverage();
-        });
-    
-    cout << "  (จากสูงไปต่ำ):" << endl;
-    for (const auto& student : sortedStudents) {
-        cout << "    " << student.getName() << ": " 
-             << fixed << setprecision(2) << student.getAverage() << endl;
-    }
-    cout << endl;
-    
-    // วันที่และเวลา
-    cout << "\033[1;33mวันที่และเวลา:\033[0m" << endl;
-    
-    time_t now = time(0);
-    tm* localTime = localtime(&now);
-    
-    cout << "  วันที่: " << (localTime->tm_year + 1900) << "/"
-         << (localTime->tm_mon + 1) << "/"
-         << localTime->tm_mday << endl;
-    
-    cout << "  เวลา: " << localTime->tm_hour << ":"
-         << localTime->tm_min << ":"
-         << localTime->tm_sec << endl;
-    cout << endl;
-    
-    cout << "\033[1;32m"; // สีเขียว
-    cout << "========================================================" << endl;
-    cout << "        สิ้นสุดโปรแกรมตัวอย่าง C++                       " << endl;
-    cout << "========================================================" << endl;
-    cout << "\033[0m"; // รีเซ็ตสี
-    
+    cout << "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง" << endl;
     return 0;
 }`,
                 
                 c: `#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include <stdbool.h>
 
-// โครงสร้างข้อมูลนักเรียน
-typedef struct {
-    char name[50];
-    int age;
-    int grades[5];
-    int grade_count;
-} Student;
-
-// ฟังก์ชันคำนวณเกรดเฉลี่ย
-double calculate_average(Student *student) {
-    if (student->grade_count == 0) return 0.0;
-    
-    double sum = 0.0;
-    for (int i = 0; i < student->grade_count; i++) {
-        sum += student->grades[i];
-    }
-    return sum / student->grade_count;
-}
-
-// ฟังก์ชันกำหนดระดับความสำเร็จ
-const char* get_grade_level(double average) {
-    if (average >= 80.0) return "ดีมาก";
-    if (average >= 70.0) return "ดี";
-    if (average >= 60.0) return "พอใช้";
-    return "ปรับปรุง";
-}
-
-// ฟังก์ชันแสดงข้อมูลนักเรียน
-void display_student(Student *student) {
-    double average = calculate_average(student);
-    printf("  %s (อายุ %d ปี)\\n", student->name, student->age);
-    printf("    เกรดเฉลี่ย: %.2f\\n", average);
-    printf("    ระดับ: %s\\n", get_grade_level(average));
-}
-
-// ฟังก์ชันคำนวณ Fibonacci
-void fibonacci(int n, int *result, int *count) {
-    *count = 0;
-    
-    if (n <= 0) return;
-    
-    if (n >= 1) {
-        result[(*count)++] = 0;
-    }
-    
-    if (n >= 2) {
-        result[(*count)++] = 1;
-    }
-    
-    for (int i = 2; i < n; i++) {
-        result[i] = result[i-1] + result[i-2];
-        (*count)++;
-    }
-}
-
-// ฟังก์ชันตรวจสอบจำนวนเฉพาะ
-bool is_prime(int num) {
-    if (num <= 1) return false;
-    if (num <= 3) return true;
-    if (num % 2 == 0 || num % 3 == 0) return false;
-    
-    for (int i = 5; i * i <= num; i += 6) {
-        if (num % i == 0 || num % (i + 2) == 0) {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-// ฟังก์ชันแสดงข้อมูลอาร์เรย์
-void print_array(const char* label, int arr[], int size, int limit) {
-    printf("  %s: ", label);
-    
-    int display_count = (limit > 0 && limit < size) ? limit : size;
-    
-    for (int i = 0; i < display_count; i++) {
-        printf("%d", arr[i]);
-        if (i < display_count - 1) printf(", ");
-    }
-    
-    if (limit > 0 && limit < size) {
-        printf(", ...");
-    }
-    printf("\\n");
-}
-
-// ฟังก์ชันหลัก
 int main() {
-    // ตั้งค่าสีสำหรับ console (ถ้ารองรับ)
-    printf("\\033[1;36m"); // สี cyan
-    printf("========================================================");
-    printf("\\n        โปรแกรมภาษา C ตัวอย่าง - Code Tester           ");
-    printf("\\n========================================================");
-    printf("\\033[0m\\n\\n"); // รีเซ็ตสี
+    printf("========================================\\n");
+    printf("โปรแกรมภาษา C ตัวอย่าง\\n");
+    printf("========================================\\n\\n");
     
     // ข้อมูลนักเรียน
-    Student students[5] = {
-        {"สมชาย", 18, {85, 90, 78, 92, 88}, 5},
-        {"สมหญิง", 17, {95, 92, 98, 90, 96}, 5},
-        {"สมหมาย", 19, {65, 70, 68, 72, 70}, 5},
-        {"สมศรี", 18, {55, 60, 58, 62, 65}, 5},
-        {"สมาน", 17, {45, 50, 48, 52, 55}, 5}
-    };
+    char* students[] = {"สมชาย", "สมหญิง", "สมหมาย"};
+    int ages[] = {18, 17, 19};
+    double averages[] = {85.5, 92.0, 68.5};
     
-    int student_count = 5;
-    
-    // แสดงข้อมูลนักเรียน
-    printf("\\033[1;33mข้อมูลนักเรียน:\\033[0m\\n");
-    printf("--------------------------------------------------\\n");
-    
-    for (int i = 0; i < student_count; i++) {
-        display_student(&students[i]);
-    }
-    printf("\\n");
-    
-    // Fibonacci Sequence
-    printf("\\033[1;33mลำดับ Fibonacci 15 ตัวแรก:\\033[0m\\n");
-    
-    int fib_result[15];
-    int fib_count;
-    fibonacci(15, fib_result, &fib_count);
-    print_array("Fibonacci", fib_result, fib_count, 15);
-    printf("\\n");
-    
-    // จำนวนเฉพาะ
-    printf("\\033[1;33mจำนวนเฉพาะ 1-30:\\033[0m\\n");
-    
-    int primes[30];
-    int prime_count = 0;
-    
-    for (int i = 1; i <= 30; i++) {
-        if (is_prime(i)) {
-            primes[prime_count++] = i;
-        }
+    printf("ข้อมูลนักเรียน:\\n");
+    for (int i = 0; i < 3; i++) {
+        printf("%s (อายุ %d ปี) - เกรดเฉลี่ย: %.1f\\n", students[i], ages[i], averages[i]);
     }
     
-    print_array("จำนวนเฉพาะ", primes, prime_count, 30);
-    printf("\\n");
-    
-    // การทำงานกับตัวเลข
-    printf("\\033[1;33mการทำงานกับตัวเลข:\\033[0m\\n");
-    
-    // สร้างอาร์เรย์ตัวเลข 1-20
-    int numbers[20];
-    for (int i = 0; i < 20; i++) {
-        numbers[i] = i + 1;
+    // Fibonacci
+    printf("\\nลำดับ Fibonacci 10 ตัวแรก:\\n");
+    int a = 0, b = 1;
+    for (int i = 0; i < 10; i++) {
+        printf("%d ", a);
+        int temp = a;
+        a = b;
+        b = temp + b;
     }
     
-    // เลขคู่
-    int even_numbers[20];
-    int even_count = 0;
-    
-    for (int i = 0; i < 20; i++) {
-        if (numbers[i] % 2 == 0) {
-            even_numbers[even_count++] = numbers[i];
-        }
-    }
-    
-    print_array("เลขคู่ 1-20", even_numbers, even_count, 10);
-    
-    // เลขคี่ที่มากกว่า 10
-    int odd_greater_than_10[20];
-    int odd_count = 0;
-    
-    for (int i = 0; i < 20; i++) {
-        if (numbers[i] % 2 != 0 && numbers[i] > 10) {
-            odd_greater_than_10[odd_count++] = numbers[i];
-        }
-    }
-    
-    print_array("เลขคี่ที่มากกว่า 10", odd_greater_than_10, odd_count, 20);
-    printf("\\n");
-    
-    // การคำนวณทางคณิตศาสตร์
-    printf("\\033[1;33mการคำนวณทางคณิตศาสตร์:\\033[0m\\n");
-    
-    double radius = 7.5;
-    double area = M_PI * radius * radius;
-    double circumference = 2 * M_PI * radius;
-    
-    printf("  รัศมีวงกลม: %.2f\\n", radius);
-    printf("    พื้นที่วงกลม: %.2f\\n", area);
-    printf("    เส้นรอบวง: %.2f\\n", circumference);
-    printf("\\n");
-    
-    // ตัวเลขสุ่ม
-    printf("\\033[1;33mตัวเลขสุ่ม:\\033[0m\\n");
-    
-    srand(time(NULL));
-    printf("  ตัวเลขสุ่ม 5 ตัว (1-100): ");
-    for (int i = 0; i < 5; i++) {
-        printf("%d", rand() % 100 + 1);
-        if (i < 4) printf(", ");
-    }
-    printf("\\n\\n");
-    
-    // การเรียงลำดับนักเรียนตามเกรด (แบบง่าย)
-    printf("\\033[1;33mการเรียงลำดับนักเรียนตามเกรดเฉลี่ย:\\033[0m\\n");
-    printf("  (จากสูงไปต่ำ):\\n");
-    
-    // สร้างอาร์เรย์สำหรับเกรดเฉลี่ย
-    double averages[5];
-    for (int i = 0; i < 5; i++) {
-        averages[i] = calculate_average(&students[i]);
-    }
-    
-    // Bubble sort แบบง่าย
-    for (int i = 0; i < 5; i++) {
-        for (int j = i + 1; j < 5; j++) {
-            if (averages[i] < averages[j]) {
-                // สลับค่า averages
-                double temp_avg = averages[i];
-                averages[i] = averages[j];
-                averages[j] = temp_avg;
-                
-                // สลับนักเรียน
-                Student temp_student = students[i];
-                students[i] = students[j];
-                students[j] = temp_student;
-            }
-        }
-    }
-    
-    // แสดงผลการเรียงลำดับ
-    for (int i = 0; i < 5; i++) {
-        printf("    %s: %.2f\\n", students[i].name, averages[i]);
-    }
-    printf("\\n");
-    
-    // วันที่และเวลา
-    printf("\\033[1;33mวันที่และเวลา:\\033[0m\\n");
-    
-    time_t now = time(NULL);
-    struct tm *local_time = localtime(&now);
-    
-    printf("  วันที่: %04d/%02d/%02d\\n", 
-           local_time->tm_year + 1900,
-           local_time->tm_mon + 1,
-           local_time->tm_mday);
-    
-    printf("  เวลา: %02d:%02d:%02d\\n",
-           local_time->tm_hour,
-           local_time->tm_min,
-           local_time->tm_sec);
-    printf("\\n");
-    
-    printf("\\033[1;32m"); // สีเขียว
-    printf("========================================================");
-    printf("\\n        สิ้นสุดโปรแกรมตัวอย่าง C                        ");
-    printf("\\n========================================================");
-    printf("\\033[0m\\n"); // รีเซ็ตสี
-    
+    printf("\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\n");
     return 0;
 }`,
                 
                 php: `<?php
-// โปรแกรมภาษา PHP ตัวอย่าง
-// แสดงความสามารถของ PHP
-
-// ตั้งค่าเวลาและโซนเวลา
-date_default_timezone_set('Asia/Bangkok');
-
-// คลาสนักเรียน
-class Student {
-    private $name;
-    private $age;
-    private $grades;
-    
-    public function __construct($name, $age, $grades) {
-        $this->name = $name;
-        $this->age = $age;
-        $this->grades = $grades;
-    }
-    
-    public function getName() {
-        return $this->name;
-    }
-    
-    public function getAge() {
-        return $this->age;
-    }
-    
-    public function getAverageGrade() {
-        if (empty($this->grades)) {
-            return 0;
-        }
-        return array_sum($this->grades) / count($this->grades);
-    }
-    
-    public function getGradeLevel() {
-        $average = $this->getAverageGrade();
-        if ($average >= 80) return "ดีมาก";
-        if ($average >= 70) return "ดี";
-        if ($average >= 60) return "พอใช้";
-        return "ปรับปรุง";
-    }
-    
-    public function display() {
-        $average = number_format($this->getAverageGrade(), 2);
-        return "{$this->name} (อายุ {$this->age} ปี) - เกรดเฉลี่ย: {$average} - ระดับ: " . $this->getGradeLevel();
-    }
-}
-
-// ฟังก์ชัน Fibonacci
-function fibonacci($n) {
-    if ($n <= 0) return [];
-    if ($n == 1) return [0];
-    if ($n == 2) return [0, 1];
-    
-    $fib_sequence = [0, 1];
-    for ($i = 2; $i < $n; $i++) {
-        $fib_sequence[] = $fib_sequence[$i-1] + $fib_sequence[$i-2];
-    }
-    
-    return $fib_sequence;
-}
-
-// ฟังก์ชันตรวจสอบจำนวนเฉพาะ
-function is_prime($num) {
-    if ($num <= 1) return false;
-    if ($num <= 3) return true;
-    if ($num % 2 == 0 || $num % 3 == 0) return false;
-    
-    for ($i = 5; $i * $i <= $num; $i += 6) {
-        if ($num % $i == 0 || $num % ($i + 2) == 0) {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-// ฟังก์ชันแสดงข้อมูลอาร์เรย์
-function display_array($label, $array, $limit = 0) {
-    $output = "  $label: ";
-    $count = ($limit > 0 && $limit < count($array)) ? $limit : count($array);
-    
-    for ($i = 0; $i < $count; $i++) {
-        $output .= $array[$i];
-        if ($i < $count - 1) $output .= ", ";
-    }
-    
-    if ($limit > 0 && $limit < count($array)) {
-        $output .= ", ...";
-    }
-    
-    return $output;
-}
-
-// เริ่มต้นโปรแกรม
-echo "\033[1;36m"; // สี cyan
-echo "========================================================" . PHP_EOL;
-echo "        โปรแกรมภาษา PHP ตัวอย่าง - Code Tester          " . PHP_EOL;
-echo "========================================================" . PHP_EOL;
-echo "\033[0m"; // รีเซ็ตสี
-echo PHP_EOL;
+echo "========================================\\n";
+echo "โปรแกรมภาษา PHP ตัวอย่าง\\n";
+echo "========================================\\n\\n";
 
 // ข้อมูลนักเรียน
-$students = [
-    new Student("สมชาย", 18, [85, 90, 78, 92, 88]),
-    new Student("สมหญิง", 17, [95, 92, 98, 90, 96]),
-    new Student("สมหมาย", 19, [65, 70, 68, 72, 70]),
-    new Student("สมศรี", 18, [55, 60, 58, 62, 65]),
-    new Student("สมาน", 17, [45, 50, 48, 52, 55])
-];
+$students = ["สมชาย", "สมหญิง", "สมหมาย"];
+$ages = [18, 17, 19];
+$averages = [85.5, 92.0, 68.5];
 
-// แสดงข้อมูลนักเรียน
-echo "\033[1;33mข้อมูลนักเรียน:\033[0m" . PHP_EOL;
-echo str_repeat("-", 50) . PHP_EOL;
-
-foreach ($students as $student) {
-    echo "  " . $student->display() . PHP_EOL;
-}
-echo PHP_EOL;
-
-// Fibonacci Sequence
-echo "\033[1;33mลำดับ Fibonacci 15 ตัวแรก:\033[0m" . PHP_EOL;
-$fib_numbers = fibonacci(15);
-echo display_array("Fibonacci", $fib_numbers, 15) . PHP_EOL;
-echo PHP_EOL;
-
-// จำนวนเฉพาะ
-echo "\033[1;33mจำนวนเฉพาะ 1-30:\033[0m" . PHP_EOL;
-$primes = [];
-for ($i = 1; $i <= 30; $i++) {
-    if (is_prime($i)) {
-        $primes[] = $i;
-    }
-}
-echo display_array("จำนวนเฉพาะ", $primes, 30) . PHP_EOL;
-echo PHP_EOL;
-
-// การทำงานกับตัวเลข
-echo "\033[1;33mการทำงานกับตัวเลข:\033[0m" . PHP_EOL;
-
-// สร้างอาร์เรย์ตัวเลข 1-20
-$numbers = range(1, 20);
-
-// เลขคู่
-$even_numbers = array_filter($numbers, function($n) {
-    return $n % 2 == 0;
-});
-echo display_array("เลขคู่ 1-20", array_values($even_numbers), 10) . PHP_EOL;
-
-// เลขคี่ที่มากกว่า 10
-$odd_greater_than_10 = array_filter($numbers, function($n) {
-    return $n % 2 != 0 && $n > 10;
-});
-echo display_array("เลขคี่ที่มากกว่า 10", array_values($odd_greater_than_10)) . PHP_EOL;
-echo PHP_EOL;
-
-// การคำนวณทางคณิตศาสตร์
-echo "\033[1;33mการคำนวณทางคณิตศาสตร์:\033[0m" . PHP_EOL;
-
-$radius = 7.5;
-$area = pi() * pow($radius, 2);
-$circumference = 2 * pi() * $radius;
-
-echo "  รัศมีวงกลม: " . number_format($radius, 2) . PHP_EOL;
-echo "    พื้นที่วงกลม: " . number_format($area, 2) . PHP_EOL;
-echo "    เส้นรอบวง: " . number_format($circumference, 2) . PHP_EOL;
-echo PHP_EOL;
-
-// ตัวเลขสุ่ม
-echo "\033[1;33mตัวเลขสุ่ม:\033[0m" . PHP_EOL;
-
-$random_numbers = [];
-for ($i = 0; $i < 5; $i++) {
-    $random_numbers[] = rand(1, 100);
+echo "ข้อมูลนักเรียน:\\n";
+for ($i = 0; $i < count($students); $i++) {
+    echo $students[$i] . " (อายุ " . $ages[$i] . " ปี) - เกรดเฉลี่ย: " . $averages[$i] . "\\n";
 }
 
-echo "  ตัวเลขสุ่ม 5 ตัว (1-100): " . implode(", ", $random_numbers) . PHP_EOL;
-echo "    ค่าสูงสุด: " . max($random_numbers) . PHP_EOL;
-echo "    ค่าต่ำสุด: " . min($random_numbers) . PHP_EOL;
-echo "    ค่าเฉลี่ย: " . number_format(array_sum($random_numbers) / count($random_numbers), 2) . PHP_EOL;
-echo PHP_EOL;
-
-// การเรียงลำดับนักเรียนตามเกรด
-echo "\033[1;33mการเรียงลำดับนักเรียนตามเกรดเฉลี่ย:\033[0m" . PHP_EOL;
-
-// สร้างอาร์เรย์ใหม่สำหรับการเรียงลำดับ
-$sorted_students = $students;
-usort($sorted_students, function($a, $b) {
-    return $b->getAverageGrade() <=> $a->getAverageGrade();
-});
-
-echo "  (จากสูงไปต่ำ):" . PHP_EOL;
-foreach ($sorted_students as $student) {
-    $average = number_format($student->getAverageGrade(), 2);
-    echo "    {$student->getName()}: {$average}" . PHP_EOL;
+// Fibonacci
+echo "\\nลำดับ Fibonacci 10 ตัวแรก:\\n";
+$a = 0;
+$b = 1;
+for ($i = 0; $i < 10; $i++) {
+    echo $a . " ";
+    $temp = $a;
+    $a = $b;
+    $b = $temp + $b;
 }
-echo PHP_EOL;
 
-// วันที่และเวลา
-echo "\033[1;33mวันที่และเวลา:\033[0m" . PHP_EOL;
-
-$now = new DateTime();
-echo "  วันที่ปัจจุบัน: " . $now->format('d/m/Y') . PHP_EOL;
-echo "  เวลาปัจจุบัน: " . $now->format('H:i:s') . PHP_EOL;
-echo "  วันในสัปดาห์: " . $now->format('l') . PHP_EOL;
-
-$tomorrow = $now->modify('+1 day');
-echo "  พรุ่งนี้: " . $tomorrow->format('d/m/Y') . PHP_EOL;
-echo PHP_EOL;
-
-// การทำงานกับอาร์เรย์หลายมิติ
-echo "\033[1;33mการทำงานกับอาร์เรย์หลายมิติ:\033[0m" . PHP_EOL;
-
-$products = [
-    ["name" => "โน๊ตบุ๊ค", "price" => 25000, "stock" => 15],
-    ["name" => "สมาร์ทโฟน", "price" => 12000, "stock" => 30],
-    ["name" => "แท็บเล็ต", "price" => 8000, "stock" => 25],
-    ["name" => "หูฟัง", "price" => 1500, "stock" => 50],
-    ["name" => "เมาส์", "price" => 500, "stock" => 100]
-];
-
-echo "  รายการสินค้า:" . PHP_EOL;
-foreach ($products as $product) {
-    $total_value = $product['price'] * $product['stock'];
-    echo "    {$product['name']}: ราคา {$product['price']} บาท, คงเหลือ {$product['stock']} ชิ้น, มูลค่ารวม: " . 
-         number_format($total_value) . " บาท" . PHP_EOL;
-}
-echo PHP_EOL;
-
-// การทำงานกับ JSON
-echo "\033[1;33mการทำงานกับ JSON:\033[0m" . PHP_EOL;
-
-$data = [
-    "project" => "PHP Code Tester",
-    "version" => "1.0",
-    "author" => "ทีมพัฒนาซอฟต์แวร์",
-    "features" => ["Real-time Execution", "Syntax Highlighting", "Multi-language Support"],
-    "students_count" => count($students),
-    "timestamp" => date('Y-m-d H:i:s')
-];
-
-$json_data = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-echo "  ข้อมูล JSON:" . PHP_EOL;
-echo $json_data . PHP_EOL;
-echo PHP_EOL;
-
-echo "\033[1;32m"; // สีเขียว
-echo "========================================================" . PHP_EOL;
-echo "        สิ้นสุดโปรแกรมตัวอย่าง PHP                       " . PHP_EOL;
-echo "========================================================" . PHP_EOL;
-echo "\033[0m"; // รีเซ็ตสี
+echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\n";
 ?>`
             };
             
@@ -2620,9 +1260,12 @@ echo "\033[0m"; // รีเซ็ตสี
                 }
             };
             
-            // ตัวแปรสำหรับติดตามสถานะ
-            let isRunningCode = false;
-            let runHistory = [];
+            // ฟังก์ชันสำหรับแปลง HTML entities
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
             
             // โหลดโค้ดที่บันทึกไว้ (ถ้ามี)
             function loadSavedCode() {
@@ -2660,9 +1303,11 @@ echo "\033[0m"; // รีเซ็ตสี
                         
                         // อัปเดตหน้าจอใหญ่ด้วย (ถ้ากำลังแสดงอยู่)
                         const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
-                        screenDoc.open();
-                        screenDoc.write(code);
-                        screenDoc.close();
+                        if (screenDoc && screenDoc.readyState === 'complete') {
+                            screenDoc.open();
+                            screenDoc.write(code);
+                            screenDoc.close();
+                        }
                     } else {
                         // สำหรับภาษาอื่นๆ ให้แสดงในคอนโซล
                         updateConsoleOutput();
@@ -2801,7 +1446,7 @@ echo "\033[0m"; // รีเซ็ตสี
             }
             
             // จำลองการรันโค้ด
-            async function simulateCodeExecution(code, language) {
+            function simulateCodeExecution(code, language) {
                 return new Promise((resolve, reject) => {
                     try {
                         // เพิ่มความล่าช้าเพื่อจำลองการรันโค้ด
@@ -2811,107 +1456,98 @@ echo "\033[0m"; // รีเซ็ตสี
                             
                             if (language === 'python') {
                                 output = `
-                                    <div class="console-line console-command">$ python code.py</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text">        โปรแกรมภาษา Python ตัวอย่าง - Code Tester</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ข้อมูลนักเรียน:</div>
-                                    <div class="console-line console-output-text">นักเรียน: สมชาย, อายุ: 18, เกรดเฉลี่ย: 86.60</div>
-                                    <div class="console-line console-output-text">ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">นักเรียน: สมหญิง, อายุ: 17, เกรดเฉลี่ย: 94.20</div>
-                                    <div class="console-line console-output-text">ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">...</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ลำดับ Fibonacci 15 ตัวแรก:</div>
-                                    <div class="console-line console-output-text">[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377]</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ตรวจสอบจำนวนเฉพาะ:</div>
-                                    <div class="console-line console-output-text">จำนวนเฉพาะ 1-30: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text">สิ้นสุดโปรแกรมตัวอย่าง Python</div>
-                                    <div class="console-line console-output-text">========================================================</div>
+                                    ========================================
+                                    โปรแกรมภาษา Python ตัวอย่าง
+                                    ========================================
+                                    
+                                    ข้อมูลนักเรียน:
+                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 84.33
+                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 95.00
+                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 67.67
+                                    
+                                    ลำดับ Fibonacci 10 ตัวแรก:
+                                    [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+                                    
+                                    สิ้นสุดโปรแกรมตัวอย่าง
                                 `;
                             } else if (language === 'csharp') {
                                 output = `
-                                    <div class="console-line console-command">$ dotnet run</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text">        โปรแกรมภาษา C# ตัวอย่าง - Code Tester</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ข้อมูลนักเรียน:</div>
-                                    <div class="console-line console-output-text">--------------------------------------------------</div>
-                                    <div class="console-line console-output-text">  นักเรียน: สมชาย, อายุ: 18</div>
-                                    <div class="console-line console-output-text">    เกรดเฉลี่ย: 86.60</div>
-                                    <div class="console-line console-output-text">    ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">  นักเรียน: สมหญิง, อายุ: 17</div>
-                                    <div class="console-line console-output-text">    เกรดเฉลี่ย: 94.20</div>
-                                    <div class="console-line console-output-text">    ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">...</div>
+                                    ========================================
+                                    โปรแกรมภาษา C# ตัวอย่าง
+                                    ========================================
+                                    
+                                    ข้อมูลนักเรียน:
+                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
+                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92.0
+                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
+                                    
+                                    ลำดับ Fibonacci 10 ตัวแรก:
+                                    0 1 1 2 3 5 8 13 21 34
+                                    
+                                    สิ้นสุดโปรแกรมตัวอย่าง
                                 `;
                             } else if (language === 'cpp') {
                                 output = `
-                                    <div class="console-line console-command">$ g++ -o program program.cpp && ./program</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text">        โปรแกรมภาษา C++ ตัวอย่าง - Code Tester</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ข้อมูลนักเรียน:</div>
-                                    <div class="console-line console-output-text">--------------------------------------------------</div>
-                                    <div class="console-line console-output-text">  สมชาย (อายุ 18 ปี)</div>
-                                    <div class="console-line console-output-text">    เกรดเฉลี่ย: 86.60</div>
-                                    <div class="console-line console-output-text">    ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">  สมหญิง (อายุ 17 ปี)</div>
-                                    <div class="console-line console-output-text">    เกรดเฉลี่ย: 94.20</div>
-                                    <div class="console-line console-output-text">    ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">...</div>
+                                    ========================================
+                                    โปรแกรมภาษา C++ ตัวอย่าง
+                                    ========================================
+                                    
+                                    ข้อมูลนักเรียน:
+                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
+                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92
+                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
+                                    
+                                    ลำดับ Fibonacci 10 ตัวแรก:
+                                    0 1 1 2 3 5 8 13 21 34
+                                    
+                                    สิ้นสุดโปรแกรมตัวอย่าง
                                 `;
                             } else if (language === 'c') {
                                 output = `
-                                    <div class="console-line console-command">$ gcc -o program program.c && ./program</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text">        โปรแกรมภาษา C ตัวอย่าง - Code Tester</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ข้อมูลนักเรียน:</div>
-                                    <div class="console-line console-output-text">--------------------------------------------------</div>
-                                    <div class="console-line console-output-text">  สมชาย (อายุ 18 ปี)</div>
-                                    <div class="console-line console-output-text">    เกรดเฉลี่ย: 86.60</div>
-                                    <div class="console-line console-output-text">    ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">  สมหญิง (อายุ 17 ปี)</div>
-                                    <div class="console-line console-output-text">    เกรดเฉลี่ย: 94.20</div>
-                                    <div class="console-line console-output-text">    ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">...</div>
+                                    ========================================
+                                    โปรแกรมภาษา C ตัวอย่าง
+                                    ========================================
+                                    
+                                    ข้อมูลนักเรียน:
+                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
+                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92.0
+                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
+                                    
+                                    ลำดับ Fibonacci 10 ตัวแรก:
+                                    0 1 1 2 3 5 8 13 21 34
+                                    
+                                    สิ้นสุดโปรแกรมตัวอย่าง
                                 `;
                             } else if (language === 'php') {
                                 output = `
-                                    <div class="console-line console-command">$ php code.php</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text">        โปรแกรมภาษา PHP ตัวอย่าง - Code Tester</div>
-                                    <div class="console-line console-output-text">========================================================</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ข้อมูลนักเรียน:</div>
-                                    <div class="console-line console-output-text">--------------------------------------------------</div>
-                                    <div class="console-line console-output-text">  สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 86.60 - ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">  สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 94.20 - ระดับ: ดีมาก</div>
-                                    <div class="console-line console-output-text">...</div>
-                                    <div class="console-line console-output-text"></div>
-                                    <div class="console-line console-output-text">ลำดับ Fibonacci 15 ตัวแรก:</div>
-                                    <div class="console-line console-output-text">  Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377</div>
+                                    ========================================
+                                    โปรแกรมภาษา PHP ตัวอย่าง
+                                    ========================================
+                                    
+                                    ข้อมูลนักเรียน:
+                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
+                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92
+                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
+                                    
+                                    ลำดับ Fibonacci 10 ตัวแรก:
+                                    0 1 1 2 3 5 8 13 21 34
+                                    
+                                    สิ้นสุดโปรแกรมตัวอย่าง
                                 `;
+                            } else {
+                                output = 'ภาษาไม่รองรับการรันในระบบจำลอง';
                             }
                             
                             // เพิ่มผลลัพธ์ลงใน execution result
                             executionResultContent.innerHTML += `
                                 <div class="console-line console-info" style="margin-top: 1rem;">$ ผลลัพธ์การรันโค้ด:</div>
                                 <div class="console-output-text" style="background: #1e293b; padding: 1rem; border-radius: 0.375rem; margin-top: 0.5rem; font-family: monospace; white-space: pre-wrap;">
-                                    ${output}
+                                    ${escapeHtml(output)}
                                 </div>
                             `;
                             
                             resolve();
-                        }, 1000); // ล่าช้า 1 วินาทีเพื่อจำลองการรันโค้ด
+                        }, 800); // ล่าช้า 0.8 วินาทีเพื่อจำลองการรันโค้ด
                     } catch (error) {
                         reject(error);
                     }
@@ -3053,11 +1689,15 @@ echo "\033[0m"; // รีเซ็ตสี
                 }
                 
                 // อัปเดต iframe
-                const code = codeEditor.value;
-                const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
-                screenDoc.open();
-                screenDoc.write(code);
-                screenDoc.close();
+                try {
+                    const code = codeEditor.value;
+                    const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
+                    screenDoc.open();
+                    screenDoc.write(code);
+                    screenDoc.close();
+                } catch (e) {
+                    console.error('Error updating screen frame:', e);
+                }
             }
             
             // สลับโหมดธีม
@@ -3232,10 +1872,10 @@ echo "\033[0m"; // รีเซ็ตสี
                 confirmModal.innerHTML = `
                     <div class="modal-content">
                         <h3 class="text-xl font-bold mb-4 flex items-center">
-                            <i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i> ${title}
+                            <i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i> ${escapeHtml(title)}
                         </h3>
                         <div class="mb-6">
-                            <p class="text-gray-300">${message}</p>
+                            <p class="text-gray-300">${escapeHtml(message)}</p>
                         </div>
                         <div class="flex justify-end space-x-3">
                             <button id="custom-cancel" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
@@ -3393,13 +2033,6 @@ echo "\033[0m"; // รีเซ็ตสี
                 const lines = textBeforeCursor.split('\n');
                 currentLine = lines.length;
                 updateLineNumbers();
-            }
-            
-            // ฟังก์ชันแปลง HTML entities
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
             }
             
             // ตั้งค่า keyboard shortcuts
