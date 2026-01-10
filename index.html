@@ -8,9 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Animate.css for animations -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <!-- Monaco Editor (CodeMirror fallback) -->
+    <!-- CodeMirror -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
@@ -19,11 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/php/php.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
-    <!-- Skulpt สำหรับรัน Python ในเบราว์เซอร์ -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/skulpt/1.2.0/skulpt.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/skulpt/1.2.0/skulpt-stdlib.js"></script>
-    <!-- PHP.js สำหรับรัน PHP ในเบราว์เซอร์ -->
-    <script src="https://cdn.jsdelivr.net/npm/php-wasm@latest/dist/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/matchbrackets.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -52,20 +47,6 @@
         
         .resizer.active {
             background-color: rgba(59, 130, 246, 0.5);
-        }
-        
-        .code-editor {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            tab-size: 2;
-            caret-color: white;
-            white-space: pre;
-            overflow-wrap: normal;
-        }
-        
-        .code-editor:focus {
-            outline: none;
         }
         
         .preview-frame {
@@ -141,77 +122,6 @@
             overflow: hidden;
         }
         
-        .line-numbers {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 50px;
-            height: 100%;
-            background-color: #1f2937;
-            color: #9ca3af;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            text-align: right;
-            padding-top: 16px;
-            padding-right: 10px;
-            overflow: hidden;
-            user-select: none;
-            border-right: 1px solid #374151;
-            z-index: 1;
-        }
-        
-        .line-number {
-            padding: 0 5px;
-            height: 21px; /* Adjust based on line-height */
-            display: block;
-        }
-        
-        .line-number.current-line {
-            background-color: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            font-weight: bold;
-        }
-        
-        .line-number:hover {
-            background-color: rgba(59, 130, 246, 0.1);
-        }
-        
-        .text-editor {
-            position: absolute;
-            left: 50px;
-            top: 0;
-            width: calc(100% - 50px);
-            height: 100%;
-            background-color: transparent;
-            color: #f3f4f6;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            border: none;
-            padding: 16px 10px;
-            resize: none;
-            white-space: pre;
-            overflow-wrap: normal;
-            overflow: auto;
-            z-index: 2;
-        }
-        
-        .CodeMirror {
-            height: 100% !important;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-            font-size: 14px !important;
-        }
-        
-        .CodeMirror-gutters {
-            background-color: #1f2937 !important;
-            border-right: 1px solid #374151 !important;
-        }
-        
-        .CodeMirror-linenumber {
-            color: #9ca3af !important;
-        }
-        
         /* Fullscreen mode */
         .fullscreen {
             position: fixed !important;
@@ -223,22 +133,6 @@
             margin: 0 !important;
             border-radius: 0 !important;
             border: none !important;
-        }
-        
-        .fullscreen .text-editor {
-            font-size: 16px !important;
-            padding: 20px !important;
-        }
-        
-        .fullscreen .line-numbers {
-            width: 60px !important;
-            font-size: 16px !important;
-            padding-top: 20px !important;
-        }
-        
-        .fullscreen .text-editor {
-            left: 60px !important;
-            width: calc(100% - 60px) !important;
         }
         
         /* Beautiful Notification */
@@ -424,70 +318,6 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
         
-        /* Screen size modal */
-        .screen-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        
-        .screen-modal.show {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .screen-modal-content {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background-color: #1f2937;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        .screen-modal-header {
-            padding: 1rem;
-            background-color: #111827;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #374151;
-        }
-        
-        .screen-modal-body {
-            flex: 1;
-            padding: 0.5rem;
-            overflow: auto;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        .screen-modal-frame {
-            border: none;
-            background-color: white;
-            border-radius: 0.375rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        .screen-size-info {
-            background-color: #374151;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
         /* Console output */
         .console-output {
             background-color: #0f172a;
@@ -639,18 +469,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Custom highlight for line numbers */
-        .line-number.highlight {
-            animation: highlightLine 1s ease;
-            background-color: rgba(59, 130, 246, 0.3);
-        }
-        
-        @keyframes highlightLine {
-            0% { background-color: rgba(59, 130, 246, 0); }
-            50% { background-color: rgba(59, 130, 246, 0.5); }
-            100% { background-color: rgba(59, 130, 246, 0.3); }
-        }
-        
         /* Code execution area */
         .code-execution {
             width: 100%;
@@ -681,7 +499,7 @@
             color: white;
         }
         
-        /* Output styling for different languages */
+        /* Output styling */
         .output-area {
             white-space: pre-wrap;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
@@ -709,7 +527,13 @@
             background: #1e293b;
         }
         
-        /* Syntax highlighting */
+        /* CodeMirror customization */
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+            font-size: 14px !important;
+        }
+        
         .cm-s-dracula.CodeMirror {
             background-color: #1e293b !important;
             color: #f8f8f2 !important;
@@ -723,10 +547,65 @@
         .cm-s-dracula .CodeMirror-linenumber {
             color: #9ca3af !important;
         }
+        
+        /* PHP specific styles */
+        .php-output {
+            background: #4F5B93;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        /* JavaScript output styles */
+        .js-output {
+            background: #f7df1e;
+            color: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        /* Code examples styling */
+        .example-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .example-item {
+            padding: 10px;
+            border-bottom: 1px solid #374151;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .example-item:hover {
+            background: #374151;
+        }
+        
+        /* Error message styling */
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #c33;
+            margin: 10px 0;
+        }
+        
+        /* Success message */
+        .success-message {
+            background: #dfd;
+            color: #383;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #383;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800 transition-colors duration-300">
-    <!-- Beautiful Notification -->
+    <!-- Notification -->
     <div id="notification" class="notification">
         <div class="notification-content" id="notification-content">
             <div class="flex items-center">
@@ -759,41 +638,7 @@
         </div>
     </div>
     
-    <!-- Screen Preview Modal -->
-    <div id="screen-modal" class="screen-modal">
-        <div class="screen-modal-content">
-            <div class="screen-modal-header">
-                <div class="flex items-center space-x-4">
-                    <h3 class="text-xl font-bold flex items-center">
-                        <i class="fas fa-desktop mr-2 text-blue-500"></i> หน้าจอใหญ่สำหรับทดสอบ
-                    </h3>
-                    <div id="screen-size-display" class="screen-size-info">ขนาด: เดสก์ท็อป</div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button id="mobile-screen" class="preview-mode-btn">
-                        <i class="fas fa-mobile-alt"></i> มือถือ
-                    </button>
-                    <button id="tablet-screen" class="preview-mode-btn">
-                        <i class="fas fa-tablet-alt"></i> แท็บเล็ต
-                    </button>
-                    <button id="desktop-screen" class="preview-mode-btn active">
-                        <i class="fas fa-desktop"></i> เดสก์ท็อป
-                    </button>
-                    <button id="full-screen" class="preview-mode-btn">
-                        <i class="fas fa-expand"></i> เต็มจอ
-                    </button>
-                    <button id="close-screen-modal" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center">
-                        <i class="fas fa-times mr-2"></i> ปิด
-                    </button>
-                </div>
-            </div>
-            <div class="screen-modal-body">
-                <iframe id="screen-frame" class="screen-modal-frame"></iframe>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Floating Action Button for Quick Actions -->
+    <!-- Floating Action Button -->
     <button id="quick-run-btn" class="floating-action-btn" title="รันโค้ด (Ctrl+Enter)">
         <i class="fas fa-play"></i>
     </button>
@@ -843,20 +688,6 @@
                                     <div class="text-xs text-gray-400">ภาษาสคริปต์</div>
                                 </div>
                             </div>
-                            <div class="language-option" data-lang="csharp">
-                                <i class="fas fa-code mr-2 text-purple-500"></i>
-                                <div>
-                                    <div class="font-medium">C#</div>
-                                    <div class="text-xs text-gray-400">Microsoft .NET</div>
-                                </div>
-                            </div>
-                            <div class="language-option" data-lang="cpp">
-                                <i class="fas fa-cog mr-2 text-blue-500"></i>
-                                <div>
-                                    <div class="font-medium">C++</div>
-                                    <div class="text-xs text-gray-400">ภาษาเชิงระบบ</div>
-                                </div>
-                            </div>
                             <div class="language-option" data-lang="php">
                                 <i class="fab fa-php mr-2 text-indigo-500"></i>
                                 <div>
@@ -877,12 +708,7 @@
                 </div>
                 
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm hidden md:block">อัปเดต:</span>
                     <div class="flex space-x-2">
-                        <button id="live-toggle" class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors shadow-md">
-                            <i class="fas fa-play"></i>
-                            <span id="live-text">Live</span>
-                        </button>
                         <button id="run-btn" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-blue-600 hover:to-blue-800 transition-all shadow-md run-button-animation">
                             <i class="fas fa-play-circle"></i>
                             <span>รันโค้ด</span>
@@ -906,7 +732,7 @@
         <div class="flex items-center justify-center mb-2">
             <div id="live-indicator" class="flex items-center space-x-2 bg-gradient-to-r from-green-900 to-green-700 text-green-200 px-4 py-2 rounded-lg shadow">
                 <i class="fas fa-circle live-indicator"></i>
-                <span id="live-status-text">อัปเดตแบบเรียลไทม์</span>
+                <span id="live-status-text">พร้อมใช้งาน</span>
             </div>
         </div>
         
@@ -918,18 +744,14 @@
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-code text-green-400"></i>
                         <h2 class="font-bold" id="editor-title">HTML Editor</h2>
-                        <span class="text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded">Line Numbers: ON</span>
+                        <span class="text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded">CodeMirror</span>
                         <div class="example-selector">
-                            <button id="example-btn" class="example-btn">
-                                <i class="fas fa-code-branch"></i> ตัวอย่างโค้ด
+                            <button id="example-btn" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition-colors flex items-center">
+                                <i class="fas fa-code-branch mr-1"></i> ตัวอย่าง
                             </button>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <div class="text-sm text-gray-400 hidden md:block">
-                            <i class="fas fa-expand-arrows-alt mr-1"></i>
-                            <span>ลากเส้นแบ่งเพื่อปรับขนาด</span>
-                        </div>
                         <button id="fullscreen-btn" class="ml-2 bg-gray-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition-colors">
                             <i class="fas fa-expand"></i>
                             <span class="hidden md:inline">เต็มจอ</span>
@@ -938,10 +760,7 @@
                 </div>
                 
                 <div class="editor-wrapper">
-                    <div id="line-numbers-container" class="line-numbers">
-                        <!-- Line numbers will be generated here -->
-                    </div>
-                    <textarea id="code-editor" class="text-editor" spellcheck="false" placeholder="เริ่มต้นเขียนโค้ดที่นี่..."></textarea>
+                    <textarea id="code-editor" class="hidden"></textarea>
                 </div>
                 
                 <!-- Resizer -->
@@ -953,92 +772,19 @@
                 <div class="flex justify-between items-center bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-gray-800 px-4 py-3 rounded-t-lg border-b border-gray-700">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-eye text-blue-400"></i>
-                        <h2 class="font-bold">ผลลัพธ์</h2>
+                        <h2 class="font-bold" id="preview-title">ผลลัพธ์</h2>
                     </div>
-                    <div class="flex items-center">
-                        <div class="preview-modes">
-                            <button id="preview-html" class="preview-mode-btn active">
-                                <i class="fas fa-code"></i> Preview
-                            </button>
-                            <button id="preview-console" class="preview-mode-btn">
-                                <i class="fas fa-terminal"></i> Console
-                            </button>
-                            <button id="preview-screen" class="preview-mode-btn">
-                                <i class="fas fa-desktop"></i> หน้าจอใหญ่
-                            </button>
-                        </div>
-                        <div class="text-sm text-gray-400 ml-4">
-                            <i class="fas fa-clock mr-1"></i>
-                            <span>อัปเดตล่าสุด: <span id="last-update">-</span></span>
-                        </div>
+                    <div class="text-sm text-gray-400">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>อัปเดตล่าสุด: <span id="last-update">-</span></span>
                     </div>
                 </div>
                 
-                <div class="flex-1 p-2 overflow-hidden">
-                    <!-- Output Tabs -->
-                    <div class="output-tabs">
-                        <div class="output-tab active" data-tab="preview">Preview</div>
-                        <div class="output-tab" data-tab="console">Console</div>
-                        <div class="output-tab" data-tab="result">ผลการรัน</div>
-                    </div>
-                    
-                    <!-- Output Contents -->
-                    <div id="preview-content" class="output-content active h-full">
-                        <div class="code-execution">
-                            <div class="execution-header">
-                                <h4 class="font-bold">ผลลัพธ์</h4>
-                                <div class="text-sm text-gray-500">แสดงผลการรันโค้ดที่นี่</div>
-                            </div>
-                            <div id="execution-output" class="execution-content">
-                                <div class="run-output">
-                                    <div id="run-result" class="output-area">
-                                        ระบบพร้อมใช้งาน โปรดเขียนโค้ดและคลิก "รันโค้ด"
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="console-content" class="output-content h-full">
-                        <div class="console-output">
-                            <div class="console-line console-command">$ ระบบคอนโซลพร้อมใช้งาน</div>
-                            <div class="console-line console-info">$ พิมพ์โค้ดในแถบด้านซ้าย แล้วคลิกปุ่ม "รันโค้ด"</div>
-                            <div id="console-output-content"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="result-content" class="output-content h-full">
-                        <div class="console-output">
-                            <div class="execution-result">
-                                <div class="execution-header">
-                                    <h4 class="font-bold text-lg">ผลการรันโค้ด</h4>
-                                    <div class="execution-time" id="execution-time">-</div>
-                                </div>
-                                <div id="execution-result-content">
-                                    <div class="console-line console-info">ยังไม่ได้รันโค้ด</div>
-                                    <div class="console-line console-info">คลิกปุ่ม "รันโค้ด" เพื่อทดสอบโค้ดของคุณ</div>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <h4 class="font-bold mb-2">สถิติ</h4>
-                                <div class="grid grid-cols-2 gap-2 text-sm">
-                                    <div class="bg-gray-800 p-2 rounded">
-                                        <div class="text-gray-400">ภาษา</div>
-                                        <div id="stat-language" class="font-medium">HTML</div>
-                                    </div>
-                                    <div class="bg-gray-800 p-2 rounded">
-                                        <div class="text-gray-400">บรรทัด</div>
-                                        <div id="stat-lines" class="font-medium">0</div>
-                                    </div>
-                                    <div class="bg-gray-800 p-2 rounded">
-                                        <div class="text-gray-400">ขนาดไฟล์</div>
-                                        <div id="stat-size" class="font-medium">0 KB</div>
-                                    </div>
-                                    <div class="bg-gray-800 p-2 rounded">
-                                        <div class="text-gray-400">เวลารันล่าสุด</div>
-                                        <div id="stat-last-run" class="font-medium">-</div>
-                                    </div>
-                                </div>
+                <div class="flex-1 p-4 overflow-hidden">
+                    <div id="execution-output" class="execution-content">
+                        <div class="run-output">
+                            <div id="run-result" class="output-area">
+                                ระบบพร้อมใช้งาน โปรดเขียนโค้ดและคลิก "รันโค้ด"
                             </div>
                         </div>
                     </div>
@@ -1051,7 +797,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                 <div class="mb-2 md:mb-0 text-center md:text-left">
                     <p class="flex items-center">
-                        <i class="fas fa-code mr-1"></i> Live Code Tester Pro - รองรับ HTML, JavaScript, Python, C#, C++, PHP
+                        <i class="fas fa-code mr-1"></i> Live Code Tester Pro - รองรับ HTML, JavaScript, Python, PHP
                     </p>
                 </div>
                 <div class="flex flex-wrap justify-center gap-4">
@@ -1063,29 +809,17 @@
                         <i class="fas fa-bolt"></i>
                         <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded shadow">Ctrl+Enter</kbd> เพื่อรันโค้ด</span>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-expand"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded shadow">F11</kbd> เพื่อเต็มจอ</span>
-                    </div>
                 </div>
             </div>
         </footer>
     </div>
 
     <script>
-        // เริ่มต้นแอปพลิเคชันเมื่อ DOM โหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function() {
-            // เก็บ reference ไปยัง element สำคัญ
-            const codeEditor = document.getElementById('code-editor');
-            const previewFrame = document.getElementById('preview-frame');
-            const screenFrame = document.getElementById('screen-frame');
-            const lineNumbersContainer = document.getElementById('line-numbers-container');
+            // Elements
+            const codeEditorTextarea = document.getElementById('code-editor');
             const themeToggle = document.getElementById('theme-toggle');
             const themeText = document.getElementById('theme-text');
-            const liveToggle = document.getElementById('live-toggle');
-            const liveText = document.getElementById('live-text');
-            const liveIndicator = document.getElementById('live-indicator');
-            const liveStatusText = document.getElementById('live-status-text');
             const runBtn = document.getElementById('run-btn');
             const quickRunBtn = document.getElementById('quick-run-btn');
             const resetBtn = document.getElementById('reset-btn');
@@ -1104,47 +838,25 @@
             const fileExtensionText = document.getElementById('file-extension');
             const confirmDownloadBtn = document.getElementById('confirm-download');
             const cancelDownloadBtn = document.getElementById('cancel-download');
-            const screenModal = document.getElementById('screen-modal');
-            const screenSizeDisplay = document.getElementById('screen-size-display');
-            const closeScreenModal = document.getElementById('close-screen-modal');
-            const mobileScreenBtn = document.getElementById('mobile-screen');
-            const tabletScreenBtn = document.getElementById('tablet-screen');
-            const desktopScreenBtn = document.getElementById('desktop-screen');
-            const fullScreenBtn = document.getElementById('full-screen');
             const languageSelectorBtn = document.getElementById('language-selector-btn');
             const languageDropdown = document.getElementById('language-dropdown');
             const currentLanguageEl = document.getElementById('current-language');
             const editorTitle = document.getElementById('editor-title');
-            const previewHtmlBtn = document.getElementById('preview-html');
-            const previewScreenBtn = document.getElementById('preview-screen');
-            const previewConsoleBtn = document.getElementById('preview-console');
-            const consoleOutputContent = document.getElementById('console-output-content');
-            const executionResultContent = document.getElementById('execution-result-content');
-            const executionTime = document.getElementById('execution-time');
-            const statLanguage = document.getElementById('stat-language');
-            const statLines = document.getElementById('stat-lines');
-            const statSize = document.getElementById('stat-size');
-            const statLastRun = document.getElementById('stat-last-run');
+            const previewTitle = document.getElementById('preview-title');
             const exampleBtn = document.getElementById('example-btn');
-            const outputTabs = document.querySelectorAll('.output-tab');
-            const outputContents = document.querySelectorAll('.output-content');
             const runResult = document.getElementById('run-result');
             const executionOutput = document.getElementById('execution-output');
             
-            // ตัวแปรสถานะ
-            let isLiveMode = true;
+            // State variables
             let isDarkMode = true;
             let isResizing = false;
             let isFullscreen = false;
-            let editorWidth = 50; // เปอร์เซ็นต์
-            let currentLine = 1;
+            let editorWidth = 50;
             let currentLanguage = 'html';
-            let currentScreenSize = 'desktop';
             let isRunningCode = false;
-            let runHistory = [];
             let codeMirrorEditor = null;
             
-            // ตัวอย่างโค้ดสำหรับแต่ละภาษา
+            // Code examples
             const codeExamples = {
                 html: `<!DOCTYPE html>
 <html>
@@ -1181,6 +893,13 @@
         button:hover {
             background: #2563eb;
         }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4fd;
+            border-radius: 5px;
+            color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -1188,41 +907,105 @@
     <div class="box">
         <p>นี่คือตัวอย่างโค้ด HTML พื้นฐาน</p>
         <button onclick="showMessage()">คลิกทดสอบ</button>
-        <div id="message"></div>
+        <div id="message" class="result"></div>
     </div>
     <script>
         function showMessage() {
-            document.getElementById('message').innerHTML = '<h3>ยินดีต้อนรับสู่ Live Code Tester!</h3><p>คุณสามารถทดสอบโค้ดได้ทันทีที่นี่</p>';
+            const now = new Date();
+            const message = document.getElementById('message');
+            message.innerHTML = \`
+                <h3>ยินดีต้อนรับสู่ Live Code Tester!</h3>
+                <p>คุณสามารถทดสอบโค้ดได้ทันทีที่นี่</p>
+                <p>เวลาปัจจุบัน: \${now.toLocaleTimeString('th-TH')}</p>
+                <p>วันที่: \${now.toLocaleDateString('th-TH')}</p>
+            \`;
         }
         
-        console.log("ระบบ HTML พร้อมใช้งาน!");
+        // โหลดหน้าเว็บแสดงข้อความทักทาย
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('message').innerHTML = 
+                '<p>ระบบ HTML พร้อมใช้งาน! คลิกปุ่มเพื่อทดสอบ</p>';
+        });
     <\/script>
 </body>
 </html>`,
-                
-                javascript: `// โปรแกรม JavaScript ตัวอย่าง
-console.log("เริ่มโปรแกรม JavaScript");
 
-// ข้อมูลนักเรียน
-const students = [
-    { name: "สมชาย", age: 18, grades: [85, 90, 78] },
-    { name: "สมหญิง", age: 17, grades: [95, 92, 98] },
-    { name: "สมหมาย", age: 19, grades: [65, 70, 68] }
-];
+                javascript: `// JavaScript Example - Simple Calculator
+console.log("JavaScript Code Runner Started");
 
-// ฟังก์ชันคำนวณเกรดเฉลี่ย
-function calculateAverage(grades) {
-    return grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+// DOM Elements
+const output = document.getElementById('output');
+const resultDiv = document.createElement('div');
+resultDiv.className = 'result';
+document.body.appendChild(resultDiv);
+
+// Display initial message
+resultDiv.innerHTML = \`
+    <h2>JavaScript Code Runner</h2>
+    <p>Welcome to JavaScript testing environment!</p>
+    <div id="calc" style="background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 10px 0;">
+        <h3>Simple Calculator</h3>
+        <input type="number" id="num1" placeholder="Number 1" value="10">
+        <input type="number" id="num2" placeholder="Number 2" value="5">
+        <br><br>
+        <button onclick="calculate('add')">+ Add</button>
+        <button onclick="calculate('subtract')">- Subtract</button>
+        <button onclick="calculate('multiply')">× Multiply</button>
+        <button onclick="calculate('divide')">÷ Divide</button>
+        <p id="calcResult" style="font-weight: bold; margin-top: 10px;"></p>
+    </div>
+\`;
+
+// Calculator functions
+function calculate(operation) {
+    const num1 = parseFloat(document.getElementById('num1').value) || 0;
+    const num2 = parseFloat(document.getElementById('num2').value) || 0;
+    let result;
+    let symbol;
+    
+    switch(operation) {
+        case 'add':
+            result = num1 + num2;
+            symbol = '+';
+            break;
+        case 'subtract':
+            result = num1 - num2;
+            symbol = '-';
+            break;
+        case 'multiply':
+            result = num1 * num2;
+            symbol = '×';
+            break;
+        case 'divide':
+            result = num2 !== 0 ? num1 / num2 : 'Error: Division by zero';
+            symbol = '÷';
+            break;
+        default:
+            result = 'Invalid operation';
+    }
+    
+    document.getElementById('calcResult').innerHTML = 
+        \`\${num1} \${symbol} \${num2} = <span style="color: #3b82f6;">\${result}</span>\`;
 }
 
-// แสดงข้อมูลนักเรียน
-console.log("\\nข้อมูลนักเรียน:");
-students.forEach(student => {
-    const avg = calculateAverage(student.grades).toFixed(2);
-    console.log(\`\${student.name} (อายุ \${student.age} ปี) - เกรดเฉลี่ย: \${avg}\`);
-});
+// Array operations example
+const fruits = ['Apple', 'Banana', 'Orange', 'Mango', 'Grape'];
+console.log("Fruits array:", fruits);
 
-// ฟังก์ชัน Fibonacci
+// Object example
+const student = {
+    name: "John Doe",
+    age: 20,
+    grades: [85, 90, 78, 92],
+    getAverage: function() {
+        return this.grades.reduce((a, b) => a + b, 0) / this.grades.length;
+    }
+};
+
+console.log("Student object:", student);
+console.log("Average grade:", student.getAverage());
+
+// Function example
 function fibonacci(n) {
     let a = 0, b = 1;
     const result = [];
@@ -1233,55 +1016,117 @@ function fibonacci(n) {
     return result;
 }
 
-console.log("\\nลำดับ Fibonacci 10 ตัวแรก:");
-console.log(fibonacci(10).join(', '));
+console.log("First 10 Fibonacci numbers:", fibonacci(10));
 
-// การทำงานกับ DOM (สำหรับแสดงผล)
-document.body.innerHTML = '<div style="padding: 20px; font-family: Arial;">';
-document.body.innerHTML += '<h1>ผลลัพธ์ JavaScript</h1>';
-document.body.innerHTML += '<div style="background: #f0f0f0; padding: 15px; border-radius: 5px;">';
-students.forEach(student => {
-    const avg = calculateAverage(student.grades).toFixed(2);
-    document.body.innerHTML += \`<p>\${student.name}: \${avg} คะแนน</p>\`;
-});
-document.body.innerHTML += '</div>';
-document.body.innerHTML += '<p>ดูผลลัพธ์เพิ่มเติมใน Console (F12)</p>';
-document.body.innerHTML += '</div>';
+// Display results on page
+const infoDiv = document.createElement('div');
+infoDiv.innerHTML = \`
+    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 20px;">
+        <h3>Console Output:</h3>
+        <p>✓ JavaScript code executed successfully</p>
+        <p>✓ Check browser console (F12) for detailed output</p>
+        <p>✓ Student average grade: \${student.getAverage().toFixed(2)}</p>
+        <p>✓ Fruits count: \${fruits.length}</p>
+    </div>
+\`;
+document.body.appendChild(infoDiv);
 
-console.log("\\nสิ้นสุดโปรแกรม JavaScript");`,
-                
-                python: `# โปรแกรม Python ตัวอย่าง
+console.log("JavaScript execution completed!");`,
+
+                python: `# Python Example - Simple Programs
+
 print("=" * 50)
-print("โปรแกรมภาษา Python ตัวอย่าง")
+print("PYTHON CODE RUNNER")
 print("=" * 50)
+print()
 
-# ข้อมูลนักเรียน
-students = [
-    {"name": "สมชาย", "age": 18, "grades": [85, 90, 78]},
-    {"name": "สมหญิง", "age": 17, "grades": [95, 92, 98]},
-    {"name": "สมหมาย", "age": 19, "grades": [65, 70, 68]}
-]
+# 1. Basic Operations
+print("1. BASIC OPERATIONS")
+print("-" * 30)
 
-# แสดงข้อมูลนักเรียน
-print("\\nข้อมูลนักเรียน:")
-for student in students:
-    avg = sum(student["grades"]) / len(student["grades"])
-    print(f"{student['name']} (อายุ {student['age']} ปี) - เกรดเฉลี่ย: {avg:.2f}")
+a = 15
+b = 7
+print(f"a = {a}, b = {b}")
+print(f"a + b = {a + b}")
+print(f"a - b = {a - b}")
+print(f"a * b = {a * b}")
+print(f"a / b = {a / b:.2f}")
+print(f"a // b = {a // b} (integer division)")
+print(f"a % b = {a % b} (modulus)")
+print(f"a ** 2 = {a ** 2} (square)")
+print()
 
-# ฟังก์ชัน Fibonacci
-def fibonacci(n):
-    a, b = 0, 1
-    result = []
-    for _ in range(n):
-        result.append(a)
-        a, b = b, a + b
-    return result
+# 2. String Operations
+print("2. STRING OPERATIONS")
+print("-" * 30)
 
-print("\\nลำดับ Fibonacci 10 ตัวแรก:")
-print(fibonacci(10))
+name = "Python Developer"
+print(f"Original string: {name}")
+print(f"Upper case: {name.upper()}")
+print(f"Lower case: {name.lower()}")
+print(f"Title case: {name.title()}")
+print(f"Length: {len(name)} characters")
+print(f"First 6 chars: {name[:6]}")
+print(f"Last 9 chars: {name[-9:]}")
+print(f"Contains 'Python': {'Python' in name}")
+print()
 
-# ตรวจสอบจำนวนเฉพาะ
+# 3. List Operations
+print("3. LIST OPERATIONS")
+print("-" * 30)
+
+fruits = ["Apple", "Banana", "Orange", "Mango", "Grape"]
+print(f"Fruits list: {fruits}")
+print(f"Number of fruits: {len(fruits)}")
+print(f"First fruit: {fruits[0]}")
+print(f"Last fruit: {fruits[-1]}")
+print(f"Sliced (first 3): {fruits[:3]}")
+
+# Add and remove items
+fruits.append("Pineapple")
+print(f"After adding Pineapple: {fruits}")
+
+fruits.remove("Banana")
+print(f"After removing Banana: {fruits}")
+
+# List comprehension
+squared_numbers = [x**2 for x in range(1, 6)]
+print(f"Squares of 1-5: {squared_numbers}")
+print()
+
+# 4. Dictionary Operations
+print("4. DICTIONARY OPERATIONS")
+print("-" * 30)
+
+student = {
+    "name": "สมชาย",
+    "age": 20,
+    "grades": [85, 90, 78, 92],
+    "major": "Computer Science"
+}
+
+print("Student Information:")
+for key, value in student.items():
+    print(f"  {key}: {value}")
+
+# Calculate average grade
+grades = student["grades"]
+average = sum(grades) / len(grades)
+print(f"Average grade: {average:.2f}")
+print()
+
+# 5. Function Examples
+print("5. FUNCTION EXAMPLES")
+print("-" * 30)
+
+def factorial(n):
+    """Calculate factorial of a number"""
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
+
 def is_prime(num):
+    """Check if a number is prime"""
     if num < 2:
         return False
     for i in range(2, int(num**0.5) + 1):
@@ -1289,167 +1134,154 @@ def is_prime(num):
             return False
     return True
 
-print("\\nจำนวนเฉพาะ 1-20:")
+# Test functions
+print(f"Factorial of 5: {factorial(5)}")
+print(f"Factorial of 7: {factorial(7)}")
+
+print("Prime numbers between 1 and 20:")
 primes = [num for num in range(1, 21) if is_prime(num)]
-print(primes)
+print(f"  {primes}")
+print()
 
-print("\\nสิ้นสุดโปรแกรมตัวอย่าง")`,
-                
-                csharp: `using System;
+# 6. Fibonacci Sequence
+print("6. FIBONACCI SEQUENCE")
+print("-" * 30)
 
-namespace CodeTesterExample
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("==========================================");
-            Console.WriteLine("โปรแกรมภาษา C# ตัวอย่าง");
-            Console.WriteLine("==========================================");
-            Console.WriteLine();
-            
-            // ข้อมูลนักเรียน
-            string[] names = { "สมชาย", "สมหญิง", "สมหมาย" };
-            int[] ages = { 18, 17, 19 };
-            double[,] grades = { {85, 90, 78}, {95, 92, 98}, {65, 70, 68} };
-            
-            Console.WriteLine("ข้อมูลนักเรียน:");
-            for (int i = 0; i < names.Length; i++)
-            {
-                double sum = 0;
-                for (int j = 0; j < 3; j++)
-                {
-                    sum += grades[i, j];
-                }
-                double average = sum / 3;
-                Console.WriteLine($"{names[i]} (อายุ {ages[i]} ปี) - เกรดเฉลี่ย: {average:F2}");
-            }
-            
-            // Fibonacci
-            Console.WriteLine("\\nลำดับ Fibonacci 10 ตัวแรก:");
-            int a = 0, b = 1;
-            for (int i = 0; i < 10; i++)
-            {
-                Console.Write($"{a} ");
-                int temp = a;
-                a = b;
-                b = temp + b;
-            }
-            
-            // DateTime
-            Console.WriteLine("\\n\\nข้อมูลวันที่และเวลา:");
-            DateTime now = DateTime.Now;
-            Console.WriteLine($"วันที่ปัจจุบัน: {now:dd/MM/yyyy}");
-            Console.WriteLine($"เวลาปัจจุบัน: {now:HH:mm:ss}");
-            Console.WriteLine($"วันในสัปดาห์: {now:dddd}");
-            
-            Console.WriteLine("\\n==========================================");
-            Console.WriteLine("สิ้นสุดโปรแกรมตัวอย่าง C#");
-            Console.WriteLine("==========================================");
-        }
-    }
-}`,
-                
-                cpp: `#include <iostream>
-#include <string>
-#include <vector>
-#include <ctime>
+def fibonacci(n):
+    """Generate Fibonacci sequence"""
+    sequence = []
+    a, b = 0, 1
+    for _ in range(n):
+        sequence.append(a)
+        a, b = b, a + b
+    return sequence
 
-using namespace std;
+fib_numbers = fibonacci(10)
+print(f"First 10 Fibonacci numbers: {fib_numbers}")
+print()
 
-// ฟังก์ชันคำนวณค่าเฉลี่ย
-double calculateAverage(vector<int> grades) {
-    double sum = 0;
-    for (int grade : grades) {
-        sum += grade;
-    }
-    return sum / grades.size();
-}
+# 7. Current Date and Time
+print("7. DATE AND TIME")
+print("-" * 30)
 
-int main() {
-    cout << "==========================================" << endl;
-    cout << "โปรแกรมภาษา C++ ตัวอย่าง" << endl;
-    cout << "==========================================" << endl;
-    cout << endl;
-    
-    // ข้อมูลนักเรียน
-    vector<string> names = {"สมชาย", "สมหญิง", "สมหมาย"};
-    vector<int> ages = {18, 17, 19};
-    vector<vector<int>> grades = {
-        {85, 90, 78},
-        {95, 92, 98},
-        {65, 70, 68}
-    };
-    
-    cout << "ข้อมูลนักเรียน:" << endl;
-    for (int i = 0; i < names.size(); i++) {
-        double average = calculateAverage(grades[i]);
-        cout << names[i] << " (อายุ " << ages[i] << " ปี) - เกรดเฉลี่ย: " << average << endl;
-    }
-    
-    // Fibonacci
-    cout << "\\nลำดับ Fibonacci 10 ตัวแรก:" << endl;
-    int a = 0, b = 1;
-    for (int i = 0; i < 10; i++) {
-        cout << a << " ";
-        int temp = a;
-        a = b;
-        b = temp + b;
-    }
-    
-    // วันที่และเวลา
-    cout << "\\n\\nข้อมูลวันที่และเวลา:" << endl;
-    time_t now = time(0);
-    tm* ltm = localtime(&now);
-    cout << "วันที่: " << ltm->tm_mday << "/" << 1 + ltm->tm_mon << "/" << 1900 + ltm->tm_year << endl;
-    cout << "เวลา: " << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << endl;
-    
-    cout << "\\n==========================================" << endl;
-    cout << "สิ้นสุดโปรแกรมตัวอย่าง C++" << endl;
-    cout << "==========================================" << endl;
-    
-    return 0;
-}`,
-                
+from datetime import datetime
+now = datetime.now()
+print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"Year: {now.year}")
+print(f"Month: {now.month}")
+print(f"Day: {now.day}")
+print(f"Hour: {now.hour}")
+print(f"Minute: {now.minute}")
+print()
+
+print("=" * 50)
+print("PROGRAM EXECUTION COMPLETED SUCCESSFULLY!")
+print("=" * 50)`,
+
                 php: `<?php
-// โปรแกรมภาษา PHP ตัวอย่าง
-echo "==========================================\\n";
-echo "โปรแกรมภาษา PHP ตัวอย่าง\\n";
-echo "==========================================\\n\\n";
+// PHP Code Runner Example
+echo "<!DOCTYPE html>";
+echo "<html>";
+echo "<head>";
+echo "    <title>PHP Code Runner</title>";
+echo "    <style>";
+echo "        body { font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }";
+echo "        .container { background: rgba(255,255,255,0.9); padding: 30px; border-radius: 10px; color: #333; margin: 20px auto; max-width: 800px; }";
+echo "        h1 { color: #4F5B93; }";
+echo "        h2 { color: #5D6CC0; border-bottom: 2px solid #5D6CC0; padding-bottom: 5px; }";
+echo "        .result { background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 10px 0; color: #1e40af; }";
+echo "        table { width: 100%; border-collapse: collapse; margin: 10px 0; }";
+echo "        th { background: #4F5B93; color: white; padding: 10px; text-align: left; }";
+echo "        td { padding: 8px; border-bottom: 1px solid #ddd; }";
+echo "        tr:hover { background: #f5f5f5; }";
+echo "        .success { color: #059669; font-weight: bold; }";
+echo "        .error { color: #dc2626; }";
+echo "    </style>";
+echo "</head>";
+echo "<body>";
+echo "    <div class='container'>";
+echo "        <h1>PHP Code Runner</h1>";
+echo "        <p>Welcome to PHP testing environment!</p>";
+echo "        <div class='result'>";
+echo "            <h2>Server Information</h2>";
+echo "            <p><strong>PHP Version:</strong> " . phpversion() . "</p>";
+echo "            <p><strong>Server Software:</strong> " . $_SERVER['SERVER_SOFTWARE'] . "</p>";
+echo "            <p><strong>Current Timestamp:</strong> " . date('Y-m-d H:i:s') . "</p>";
+echo "            <p><strong>Timezone:</strong> " . date_default_timezone_get() . "</p>";
+echo "        </div>";
 
-// ข้อมูลนักเรียน
-$students = [
-    ["name" => "สมชาย", "age" => 18, "grades" => [85, 90, 78]],
-    ["name" => "สมหญิง", "age" => 17, "grades" => [95, 92, 98]],
-    ["name" => "สมหมาย", "age" => 19, "grades" => [65, 70, 68]]
-];
+// 1. Basic PHP Operations
+echo "        <h2>1. Basic PHP Operations</h2>";
+$num1 = 25;
+$num2 = 7;
+echo "        <p><strong>Number 1:</strong> $num1</p>";
+echo "        <p><strong>Number 2:</strong> $num2</p>";
+echo "        <p><strong>Addition:</strong> " . ($num1 + $num2) . "</p>";
+echo "        <p><strong>Subtraction:</strong> " . ($num1 - $num2) . "</p>";
+echo "        <p><strong>Multiplication:</strong> " . ($num1 * $num2) . "</p>";
+echo "        <p><strong>Division:</strong> " . round($num1 / $num2, 2) . "</p>";
+echo "        <p><strong>Modulus:</strong> " . ($num1 % $num2) . "</p>";
 
-// แสดงข้อมูลนักเรียน
-echo "ข้อมูลนักเรียน:\\n";
-foreach ($students as $student) {
-    $average = array_sum($student["grades"]) / count($student["grades"]);
-    printf("%s (อายุ %d ปี) - เกรดเฉลี่ย: %.2f\\n", 
-           $student["name"], $student["age"], $average);
-}
+// 2. String Operations
+echo "        <h2>2. String Operations</h2>";
+$text = "Welcome to PHP Programming";
+echo "        <p><strong>Original Text:</strong> $text</p>";
+echo "        <p><strong>Length:</strong> " . strlen($text) . " characters</p>";
+echo "        <p><strong>Uppercase:</strong> " . strtoupper($text) . "</p>";
+echo "        <p><strong>Lowercase:</strong> " . strtolower($text) . "</p>";
+echo "        <p><strong>First 7 characters:</strong> " . substr($text, 0, 7) . "</p>";
+echo "        <p><strong>Word Count:</strong> " . str_word_count($text) . " words</p>";
 
-// ฟังก์ชัน Fibonacci
-function fibonacci($n) {
-    $a = 0;
-    $b = 1;
-    $result = [];
-    for ($i = 0; $i < $n; $i++) {
-        $result[] = $a;
-        $temp = $a;
-        $a = $b;
-        $b = $temp + $b;
+// 3. Array Operations
+echo "        <h2>3. Array Operations</h2>";
+$fruits = array("Apple", "Banana", "Orange", "Mango", "Grape");
+echo "        <p><strong>Fruits Array:</strong> " . implode(", ", $fruits) . "</p>";
+echo "        <p><strong>Array Count:</strong> " . count($fruits) . " items</p>";
+
+// Add and remove from array
+array_push($fruits, "Pineapple");
+echo "        <p><strong>After adding Pineapple:</strong> " . implode(", ", $fruits) . "</p>";
+
+array_splice($fruits, array_search("Banana", $fruits), 1);
+echo "        <p><strong>After removing Banana:</strong> " . implode(", ", $fruits) . "</p>";
+
+// 4. Associative Array (Dictionary)
+echo "        <h2>4. Student Information</h2>";
+$student = array(
+    "name" => "สมชาย",
+    "age" => 20,
+    "grades" => array(85, 90, 78, 92),
+    "major" => "Computer Science"
+);
+
+echo "        <table>";
+foreach ($student as $key => $value) {
+    if ($key == "grades") {
+        $grades_str = implode(", ", $value);
+        $average = array_sum($value) / count($value);
+        echo "        <tr><th>$key</th><td>$grades_str (Average: " . round($average, 2) . ")</td></tr>";
+    } else {
+        echo "        <tr><th>$key</th><td>$value</td></tr>";
     }
-    return $result;
+}
+echo "        </table>";
+
+// 5. Date and Time Functions
+echo "        <h2>5. Date and Time</h2>";
+date_default_timezone_set('Asia/Bangkok');
+echo "        <p><strong>Current Date:</strong> " . date('d/m/Y') . "</p>";
+echo "        <p><strong>Current Time:</strong> " . date('H:i:s') . "</p>";
+echo "        <p><strong>Day of Week:</strong> " . date('l') . "</p>";
+echo "        <p><strong>Month Name:</strong> " . date('F') . "</p>";
+
+// 6. Function Examples
+echo "        <h2>6. Function Examples</h2>";
+
+function factorial($n) {
+    if ($n <= 1) return 1;
+    return $n * factorial($n - 1);
 }
 
-echo "\\nลำดับ Fibonacci 10 ตัวแรก:\\n";
-echo implode(", ", fibonacci(10)) . "\\n";
-
-// ตรวจสอบจำนวนเฉพาะ
 function is_prime($num) {
     if ($num < 2) return false;
     for ($i = 2; $i <= sqrt($num); $i++) {
@@ -1458,36 +1290,56 @@ function is_prime($num) {
     return true;
 }
 
-echo "\\nจำนวนเฉพาะ 1-20:\\n";
-$primes = [];
+echo "        <p><strong>Factorial of 5:</strong> " . factorial(5) . "</p>";
+echo "        <p><strong>Factorial of 7:</strong> " . factorial(7) . "</p>";
+
+echo "        <p><strong>Prime numbers 1-20:</strong> ";
+$primes = array();
 for ($i = 1; $i <= 20; $i++) {
     if (is_prime($i)) {
         $primes[] = $i;
     }
 }
-echo implode(", ", $primes) . "\\n";
+echo implode(", ", $primes) . "</p>";
 
-// วันที่และเวลา
-echo "\\nข้อมูลวันที่และเวลา:\\n";
-date_default_timezone_set('Asia/Bangkok');
-echo "วันที่ปัจจุบัน: " . date("d/m/Y") . "\\n";
-echo "เวลาปัจจุบัน: " . date("H:i:s") . "\\n";
-echo "วันในสัปดาห์: " . date("l") . "\\n";
+// 7. Fibonacci Sequence
+echo "        <h2>7. Fibonacci Sequence</h2>";
+function fibonacci($n) {
+    $sequence = array();
+    $a = 0;
+    $b = 1;
+    for ($i = 0; $i < $n; $i++) {
+        $sequence[] = $a;
+        $temp = $a;
+        $a = $b;
+        $b = $temp + $b;
+    }
+    return $sequence;
+}
 
-echo "\\n==========================================\\n";
-echo "สิ้นสุดโปรแกรมตัวอย่าง PHP\\n";
-echo "==========================================\\n";
+$fib_numbers = fibonacci(10);
+echo "        <p><strong>First 10 Fibonacci numbers:</strong> " . implode(", ", $fib_numbers) . "</p>";
+
+echo "        <div class='result success'>";
+echo "            <h3>Execution Summary</h3>";
+echo "            <p>✓ PHP code executed successfully</p>";
+echo "            <p>✓ All functions tested without errors</p>";
+echo "            <p>✓ Server time: " . date('H:i:s') . "</p>";
+echo "        </div>";
+
+echo "    </div>";
+echo "</body>";
+echo "</html>";
 ?>`
             };
             
-            // ขยายข้อมูลภาษา
+            // Language info
             const languageInfo = {
                 html: { 
                     name: "HTML", 
                     extension: ".html", 
                     icon: "fab fa-html5", 
                     color: "text-orange-500",
-                    runner: "browser",
                     mode: "htmlmixed"
                 },
                 javascript: { 
@@ -1495,7 +1347,6 @@ echo "==========================================\\n";
                     extension: ".js", 
                     icon: "fab fa-js", 
                     color: "text-yellow-500",
-                    runner: "browser",
                     mode: "javascript"
                 },
                 python: { 
@@ -1503,51 +1354,22 @@ echo "==========================================\\n";
                     extension: ".py", 
                     icon: "fab fa-python", 
                     color: "text-yellow-500",
-                    runner: "skulpt",
                     mode: "python"
-                },
-                csharp: { 
-                    name: "C#", 
-                    extension: ".cs", 
-                    icon: "fas fa-code", 
-                    color: "text-purple-500",
-                    runner: "console",
-                    mode: "clike"
-                },
-                cpp: { 
-                    name: "C++", 
-                    extension: ".cpp", 
-                    icon: "fas fa-cog", 
-                    color: "text-blue-500",
-                    runner: "console",
-                    mode: "clike"
                 },
                 php: { 
                     name: "PHP", 
                     extension: ".php", 
                     icon: "fab fa-php", 
                     color: "text-indigo-500",
-                    runner: "phpjs",
                     mode: "php"
                 }
             };
             
-            // ฟังก์ชันสำหรับแปลง HTML entities
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            
-            // ตั้งค่า CodeMirror Editor
-            function setupCodeMirror() {
+            // Initialize CodeMirror
+            function initCodeMirror() {
                 const langInfo = languageInfo[currentLanguage];
                 
-                if (codeMirrorEditor) {
-                    codeMirrorEditor.toTextArea();
-                }
-                
-                codeMirrorEditor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                codeMirrorEditor = CodeMirror.fromTextArea(codeEditorTextarea, {
                     mode: langInfo.mode,
                     theme: "dracula",
                     lineNumbers: true,
@@ -1560,103 +1382,38 @@ echo "==========================================\\n";
                     matchBrackets: true,
                     extraKeys: {
                         "Ctrl-Space": "autocomplete",
-                        "Ctrl-S": function() {
-                            saveCode();
-                        },
-                        "Ctrl-Enter": function() {
-                            runCode();
-                        },
-                        "F11": function(cm) {
-                            toggleFullscreen();
-                        }
+                        "Ctrl-S": saveCode,
+                        "Ctrl-Enter": runCode,
+                        "F11": toggleFullscreen
                     }
                 });
                 
                 codeMirrorEditor.setSize("100%", "100%");
-                
-                // จัดการ events
-                codeMirrorEditor.on("change", function() {
-                    updateLineNumbers();
-                    updateStats();
-                    if (isLiveMode && currentLanguage === 'html') {
-                        updatePreview();
-                    }
-                });
             }
             
-            // โหลดโค้ดที่บันทึกไว้ (ถ้ามี)
+            // Load saved code
             function loadSavedCode() {
                 try {
                     const savedCode = localStorage.getItem(`codeTester_${currentLanguage}`);
                     if (savedCode) {
                         codeMirrorEditor.setValue(savedCode);
-                        updatePreview();
-                        updateLineNumbers();
-                        updateStats();
                         showNotification('โหลดโค้ดสำเร็จ', `โหลดโค้ด ${languageInfo[currentLanguage].name} ที่บันทึกไว้`, 'success');
                     } else {
-                        // ถ้าไม่มีโค้ดที่บันทึกไว้ ให้ใช้ตัวอย่างโค้ด
                         codeMirrorEditor.setValue(codeExamples[currentLanguage]);
-                        updateLineNumbers();
-                        updatePreview();
-                        updateStats();
                     }
                 } catch (e) {
                     console.error('Error loading saved code:', e);
                 }
             }
             
-            // บันทึกโค้ด
+            // Save code
             function saveCode() {
                 const code = codeMirrorEditor.getValue();
                 localStorage.setItem(`codeTester_${currentLanguage}`, code);
                 showNotification('บันทึกสำเร็จ', 'บันทึกโค้ดเรียบร้อยแล้ว', 'success');
             }
             
-            // อัปเดต preview
-            function updatePreview() {
-                try {
-                    const code = codeMirrorEditor.getValue();
-                    
-                    if (currentLanguage === 'html') {
-                        // สร้าง iframe สำหรับแสดงผล HTML
-                        const iframe = document.createElement('iframe');
-                        iframe.className = 'web-output';
-                        iframe.sandbox = 'allow-scripts allow-same-origin';
-                        
-                        executionOutput.innerHTML = '';
-                        executionOutput.appendChild(iframe);
-                        
-                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                        iframeDoc.open();
-                        iframeDoc.write(code);
-                        iframeDoc.close();
-                    } else if (currentLanguage === 'javascript') {
-                        // รัน JavaScript ใน sandbox
-                        runJavaScript(code);
-                    }
-                    
-                    // อัปเดตเวลาล่าสุด
-                    const now = new Date();
-                    lastUpdateEl.textContent = now.toLocaleTimeString('th-TH');
-                    
-                    // บันทึกลง localStorage
-                    localStorage.setItem(`codeTester_${currentLanguage}`, code);
-                    
-                    // อัปเดตสถิติ
-                    updateStats();
-                    
-                    // แสดงการแจ้งเตือนถ้าไม่ได้อยู่ในโหมด live
-                    if (!isLiveMode && currentLanguage === 'html') {
-                        showNotification('อัปเดตสำเร็จ', 'อัปเดต preview เรียบร้อยแล้ว', 'success');
-                    }
-                } catch (e) {
-                    console.error('Error updating preview:', e);
-                    showNotification('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดต preview ได้', 'error');
-                }
-            }
-            
-            // รันโค้ด
+            // Run code
             async function runCode() {
                 if (isRunningCode) return;
                 
@@ -1664,391 +1421,266 @@ echo "==========================================\\n";
                 const startTime = new Date();
                 const code = codeMirrorEditor.getValue();
                 
-                // แสดงสถานะการรัน
                 runBtn.innerHTML = '<div class="loading"></div> รันโค้ด...';
                 runBtn.classList.remove('run-button-animation');
                 
                 try {
-                    // เปลี่ยนไปที่แท็บ preview
-                    switchTab('preview');
-                    
-                    // ล้างผลลัพธ์เก่า
-                    consoleOutputContent.innerHTML = '';
-                    
-                    // เริ่มต้น console output
-                    consoleOutputContent.innerHTML = `
-                        <div class="console-line console-command">$ เริ่มรันโค้ดภาษา ${languageInfo[currentLanguage].name}</div>
-                        <div class="console-line console-info">$ เวลาเริ่มต้น: ${startTime.toLocaleTimeString('th-TH')}</div>
-                    `;
-                    
-                    // รันโค้ดตามภาษา
                     let result;
+                    
                     switch (currentLanguage) {
                         case 'html':
-                            result = await runHTML(code);
+                            result = await runHtmlCode(code);
                             break;
                         case 'javascript':
-                            result = await runJavaScript(code);
+                            result = await runJavaScriptCode(code);
                             break;
                         case 'python':
-                            result = await runPython(code);
-                            break;
-                        case 'csharp':
-                        case 'cpp':
-                            result = await runConsoleLanguage(code, currentLanguage);
+                            result = await runPythonCode(code);
                             break;
                         case 'php':
-                            result = await runPHP(code);
+                            result = await runPhpCode(code);
                             break;
                         default:
-                            result = 'ภาษาไม่รองรับการรัน';
+                            throw new Error('ภาษาไม่รองรับ');
                     }
                     
                     const endTime = new Date();
-                    const executionTimeMs = endTime - startTime;
+                    const executionTime = endTime - startTime;
                     
-                    // แสดงผลลัพธ์ใน console
-                    consoleOutputContent.innerHTML += `
-                        <div class="console-line console-success">
-                            $ การรันโค้ดสำเร็จเรียบร้อย! (${executionTimeMs}ms)
-                        </div>
-                    `;
+                    lastUpdateEl.textContent = endTime.toLocaleTimeString('th-TH');
                     
-                    // อัปเดตเวลาการรัน
-                    executionTime.textContent = `${executionTimeMs}ms`;
-                    statLastRun.textContent = endTime.toLocaleTimeString('th-TH');
-                    
-                    // บันทึกประวัติการรัน
-                    runHistory.push({
-                        language: currentLanguage,
-                        timestamp: endTime,
-                        executionTime: executionTimeMs,
-                        success: true
-                    });
-                    
-                    // แสดงผลลัพธ์ใน preview
-                    displayExecutionResult(result);
-                    
-                    showNotification('รันโค้ดสำเร็จ', `รันโค้ด ${languageInfo[currentLanguage].name} เสร็จสิ้นใน ${executionTimeMs}ms`, 'success');
+                    showNotification('รันโค้ดสำเร็จ', `รันโค้ดเสร็จสิ้นใน ${executionTime}ms`, 'success');
                     
                 } catch (error) {
                     console.error('Error running code:', error);
-                    
-                    // แสดงข้อผิดพลาดใน console
-                    consoleOutputContent.innerHTML += `
-                        <div class="console-line console-error">
-                            $ เกิดข้อผิดพลาดในการรันโค้ด: ${error.message}
-                        </div>
-                        <div class="console-line console-warning">
-                            $ โปรดตรวจสอบไวยากรณ์ของโค้ด
+                    executionOutput.innerHTML = `
+                        <div class="error-message">
+                            <h3 class="font-bold">เกิดข้อผิดพลาด</h3>
+                            <p>${escapeHtml(error.message)}</p>
+                            <p class="mt-2 text-sm">โปรดตรวจสอบโค้ดของคุณอีกครั้ง</p>
                         </div>
                     `;
-                    
-                    // แสดงข้อผิดพลาดใน preview
-                    displayExecutionResult(`<div class="p-4 bg-red-100 text-red-800 rounded-lg">
-                        <h3 class="font-bold">เกิดข้อผิดพลาด</h3>
-                        <p>${escapeHtml(error.message)}</p>
-                        <p class="mt-2 text-sm">โปรดตรวจสอบโค้ดของคุณอีกครั้ง</p>
-                    </div>`);
-                    
                     showNotification('เกิดข้อผิดพลาด', 'ไม่สามารถรันโค้ดได้', 'error');
-                    
                 } finally {
-                    // คืนสถานะปุ่มรันโค้ด
                     isRunningCode = false;
                     runBtn.innerHTML = '<i class="fas fa-play-circle"></i> รันโค้ด';
                     runBtn.classList.add('run-button-animation');
-                    
-                    // อัปเดตสถิติ
-                    updateStats();
                 }
             }
             
-            // แสดงผลลัพธ์การรัน
-            function displayExecutionResult(content) {
-                if (currentLanguage === 'html') {
-                    // สำหรับ HTML ใช้ iframe
-                    const iframe = document.createElement('iframe');
-                    iframe.className = 'web-output';
-                    iframe.sandbox = 'allow-scripts allow-same-origin';
-                    
-                    executionOutput.innerHTML = '';
-                    executionOutput.appendChild(iframe);
-                    
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    iframeDoc.open();
-                    iframeDoc.write(codeMirrorEditor.getValue());
-                    iframeDoc.close();
-                } else {
-                    // สำหรับภาษาอื่นๆ แสดงใน div
-                    executionOutput.innerHTML = `
-                        <div class="run-output">
-                            <div class="output-area">${content}</div>
-                        </div>
-                    `;
-                }
-            }
-            
-            // รัน HTML
-            async function runHTML(code) {
+            // Run HTML code
+            function runHtmlCode(code) {
                 return new Promise((resolve) => {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.sandbox = 'allow-scripts allow-same-origin';
+                    executionOutput.innerHTML = `
+                        <iframe class="web-output" sandbox="allow-scripts allow-same-origin"></iframe>
+                    `;
                     
-                    document.body.appendChild(iframe);
-                    
+                    const iframe = executionOutput.querySelector('iframe');
                     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
                     iframeDoc.open();
                     iframeDoc.write(code);
                     iframeDoc.close();
                     
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                        resolve('HTML รันสำเร็จ');
-                    }, 100);
+                    resolve();
                 });
             }
             
-            // รัน JavaScript
-            async function runJavaScript(code) {
+            // Run JavaScript code
+            function runJavaScriptCode(code) {
                 return new Promise((resolve) => {
+                    // Clear the output
+                    executionOutput.innerHTML = `
+                        <div class="js-output">
+                            <h3 class="font-bold mb-4">JavaScript Output</h3>
+                            <div id="js-console-output"></div>
+                        </div>
+                    `;
+                    
+                    const outputDiv = document.getElementById('js-console-output');
+                    let consoleOutput = '';
+                    
+                    // Override console.log to capture output
+                    const originalLog = console.log;
+                    const originalError = console.error;
+                    const originalWarn = console.warn;
+                    
+                    console.log = function(...args) {
+                        consoleOutput += args.join(' ') + '\\n';
+                        originalLog.apply(console, args);
+                    };
+                    
+                    console.error = function(...args) {
+                        consoleOutput += '[ERROR] ' + args.join(' ') + '\\n';
+                        originalError.apply(console, args);
+                    };
+                    
+                    console.warn = function(...args) {
+                        consoleOutput += '[WARN] ' + args.join(' ') + '\\n';
+                        originalWarn.apply(console, args);
+                    };
+                    
                     try {
-                        // สร้าง sandbox สำหรับรัน JavaScript
-                        const sandbox = document.createElement('div');
-                        sandbox.id = 'js-sandbox';
-                        sandbox.style.display = 'none';
-                        document.body.appendChild(sandbox);
-                        
-                        // บันทึก console.log ดั้งเดิม
-                        const originalLog = console.log;
-                        const originalError = console.error;
-                        const originalWarn = console.warn;
-                        
-                        let output = '';
-                        
-                        // เปลี่ยน console.log เพื่อดักจับ output
-                        console.log = function(...args) {
-                            output += args.join(' ') + '\\n';
-                            originalLog.apply(console, args);
-                        };
-                        
-                        console.error = function(...args) {
-                            output += '[ERROR] ' + args.join(' ') + '\\n';
-                            originalError.apply(console, args);
-                        };
-                        
-                        console.warn = function(...args) {
-                            output += '[WARN] ' + args.join(' ') + '\\n';
-                            originalWarn.apply(console, args);
-                        };
-                        
-                        // รันโค้ด JavaScript
+                        // Create a sandbox for JavaScript execution
                         const script = document.createElement('script');
                         script.textContent = `
                             try {
+                                // Create a simple DOM for JavaScript code
+                                if (!document.getElementById('output')) {
+                                    const div = document.createElement('div');
+                                    div.id = 'output';
+                                    document.body.appendChild(div);
+                                }
+                                
+                                // Execute user code
                                 ${code}
-                            } catch (e) {
-                                console.error('Runtime Error:', e.message);
+                            } catch(e) {
+                                console.error('Execution Error:', e.message);
                             }
                         `;
                         
-                        sandbox.appendChild(script);
+                        // Execute in the current document
+                        document.head.appendChild(script);
+                        document.head.removeChild(script);
                         
-                        // รีเซ็ต console functions
+                        // Restore console functions
                         setTimeout(() => {
                             console.log = originalLog;
                             console.error = originalError;
                             console.warn = originalWarn;
                             
-                            document.body.removeChild(sandbox);
-                            
-                            // แสดงผลลัพธ์
-                            if (!output.trim()) {
-                                output = 'JavaScript รันสำเร็จ (ไม่มี output)';
+                            // Display captured output
+                            if (consoleOutput.trim()) {
+                                outputDiv.innerHTML = `<pre>${escapeHtml(consoleOutput)}</pre>`;
+                            } else {
+                                outputDiv.innerHTML = '<p>✓ JavaScript executed successfully (no console output)</p>';
                             }
                             
-                            // สร้าง UI สำหรับแสดงผล
-                            const resultHTML = `
-                                <div class="p-4 bg-blue-50 rounded-lg">
-                                    <h3 class="font-bold text-lg mb-2">ผลลัพธ์ JavaScript</h3>
-                                    <div class="bg-gray-900 text-white p-3 rounded font-mono text-sm overflow-auto max-h-60">
-                                        ${escapeHtml(output)}
-                                    </div>
-                                    <p class="mt-2 text-sm text-gray-600">ดูรายละเอียดเพิ่มเติมในแท็บ Console</p>
-                                </div>
-                            `;
-                            
-                            displayExecutionResult(resultHTML);
-                            resolve(output);
+                            resolve();
                         }, 100);
                         
                     } catch (e) {
+                        console.log = originalLog;
+                        console.error = originalError;
+                        console.warn = originalWarn;
+                        
                         throw new Error(`JavaScript Error: ${e.message}`);
                     }
                 });
             }
             
-            // รัน Python (ใช้ Skulpt)
-            async function runPython(code) {
+            // Run Python code (simulated)
+            function runPythonCode(code) {
                 return new Promise((resolve) => {
-                    try {
-                        // ตั้งค่า Skulpt
-                        Sk.configure({
-                            output: function(text) {
-                                // อัปเดต output
-                                consoleOutputContent.innerHTML += `<div class="console-line console-output-text">${escapeHtml(text)}</div>`;
-                            },
-                            read: function(x) {
-                                if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-                                    throw "File not found: '" + x + "'";
-                                return Sk.builtinFiles["files"][x];
-                            }
-                        });
-                        
-                        // รัน Python code
-                        Sk.misceval.asyncToPromise(function() {
-                            return Sk.importMainWithBody("<stdin>", false, code, true);
-                        }).then(function() {
-                            resolve('Python รันสำเร็จ');
-                        }).catch(function(err) {
-                            throw new Error(`Python Error: ${err.toString()}`);
-                        });
-                        
-                    } catch (e) {
-                        throw new Error(`Python Runtime Error: ${e.message}`);
-                    }
-                });
-            }
-            
-            // รัน PHP (ใช้ PHP.js)
-            async function runPHP(code) {
-                return new Promise((resolve) => {
-                    try {
-                        // สำหรับ PHP จำลองการรัน (ในเบราว์เซอร์จริงต้องใช้ server-side)
-                        let output = '';
-                        
-                        // จำลองผลลัพธ์ PHP เบื้องต้น
-                        if (code.includes('echo') || code.includes('print')) {
-                            // ดักจับ echo statements
-                            const echoMatches = code.match(/echo\s+["']([^"']+)["']/g) || [];
-                            const printMatches = code.match(/print\s+["']([^"']+)["']/g) || [];
-                            
-                            echoMatches.forEach(match => {
-                                output += match.replace(/echo\s+["']/, '').replace(/["']/, '') + '\\n';
-                            });
-                            
-                            printMatches.forEach(match => {
-                                output += match.replace(/print\s+["']/, '').replace(/["']/, '') + '\\n';
-                            });
-                            
-                            if (!output) {
-                                output = 'PHP รันสำเร็จ (ไม่มี output จาก echo/print)';
-                            }
-                        } else {
-                            output = 'PHP รันสำเร็จ';
-                        }
-                        
-                        // แสดงผลลัพธ์
-                        const resultHTML = `
-                            <div class="p-4 bg-purple-50 rounded-lg">
-                                <h3 class="font-bold text-lg mb-2">ผลลัพธ์ PHP (จำลอง)</h3>
-                                <div class="bg-gray-900 text-white p-3 rounded font-mono text-sm overflow-auto max-h-60">
-                                    ${escapeHtml(output)}
-                                </div>
-                                <p class="mt-2 text-sm text-gray-600">หมายเหตุ: PHP ต้องรันบนเซิร์ฟเวอร์จริง</p>
-                            </div>
-                        `;
-                        
-                        displayExecutionResult(resultHTML);
-                        resolve(output);
-                        
-                    } catch (e) {
-                        throw new Error(`PHP Error: ${e.message}`);
-                    }
-                });
-            }
-            
-            // รันภาษา console (C#, C++)
-            async function runConsoleLanguage(code, language) {
-                return new Promise((resolve) => {
-                    // จำลองการรันสำหรับ C# และ C++
+                    // Simple Python interpreter simulation
                     let output = '';
                     
-                    if (code.includes('Console.WriteLine') || code.includes('cout')) {
-                        // ดักจับ output จาก C#/C++
-                        const lines = code.split('\\n');
-                        lines.forEach(line => {
-                            if (line.includes('Console.WriteLine') || line.includes('cout')) {
-                                const match = line.match(/Console\.WriteLine\(["']([^"']+)["']\)/) || 
-                                             line.match(/cout\s*<<\s*["']([^"']+)["']/);
-                                if (match && match[1]) {
-                                    output += match[1] + '\\n';
-                                }
+                    // Remove comments and empty lines
+                    const lines = code.split('\\n').filter(line => 
+                        line.trim() && !line.trim().startsWith('#')
+                    );
+                    
+                    // Basic Python simulation
+                    lines.forEach(line => {
+                        if (line.includes('print(')) {
+                            const match = line.match(/print\(["']([^"']+)["']\)/);
+                            if (match) {
+                                output += match[1] + '\\n';
                             }
-                        });
-                    }
+                        }
+                    });
                     
                     if (!output.trim()) {
-                        output = `${languageInfo[language].name} รันสำเร็จ (ไม่มี output)`;
+                        output = '✓ Python code executed successfully\\n✓ Use print() function to see output';
                     }
                     
-                    // แสดงผลลัพธ์
-                    const resultHTML = `
-                        <div class="p-4 ${language === 'csharp' ? 'bg-purple-50' : 'bg-blue-50'} rounded-lg">
-                            <h3 class="font-bold text-lg mb-2">ผลลัพธ์ ${languageInfo[language].name} (จำลอง)</h3>
-                            <div class="bg-gray-900 text-white p-3 rounded font-mono text-sm overflow-auto max-h-60">
-                                ${escapeHtml(output)}
-                            </div>
-                            <p class="mt-2 text-sm text-gray-600">หมายเหตุ: ${languageInfo[language].name} ต้องคอมไพล์บนเครื่องจริง</p>
+                    executionOutput.innerHTML = `
+                        <div class="run-output">
+                            <h3 class="font-bold mb-4">Python Output</h3>
+                            <pre class="output-area">${escapeHtml(output)}</pre>
+                            <p class="mt-4 text-sm text-gray-600">
+                                Note: This is a simulated Python environment. For full Python features, 
+                                use a dedicated Python IDE or server.
+                            </p>
                         </div>
                     `;
                     
-                    displayExecutionResult(resultHTML);
-                    resolve(output);
+                    resolve();
                 });
             }
             
-            // อัปเดตสถิติ
-            function updateStats() {
-                const code = codeMirrorEditor.getValue();
-                const lines = code.split('\\n').length;
-                const size = new Blob([code]).size;
-                
-                statLanguage.textContent = languageInfo[currentLanguage].name;
-                statLines.textContent = lines;
-                statSize.textContent = `${(size / 1024).toFixed(2)} KB`;
-                
-                if (runHistory.length > 0) {
-                    const lastRun = runHistory[runHistory.length - 1];
-                    statLastRun.textContent = lastRun.timestamp.toLocaleTimeString('th-TH');
-                }
+            // Run PHP code
+            function runPhpCode(code) {
+                return new Promise((resolve) => {
+                    // Check if PHP code contains PHP tags
+                    if (!code.includes('<?php') && !code.includes('<?=')) {
+                        // If no PHP tags, wrap it
+                        code = '<?php\\n' + code + '\\n?>';
+                    }
+                    
+                    // Simple PHP simulation - we'll parse basic PHP constructs
+                    let output = '';
+                    
+                    // Extract echo statements
+                    const echoMatches = code.match(/echo\s+["']([^"']+)["']/g) || [];
+                    const printMatches = code.match(/print\s+["']([^"']+)["']/g) || [];
+                    
+                    echoMatches.forEach(match => {
+                        output += match.replace(/echo\s+["']/, '').replace(/["']/, '') + '\\n';
+                    });
+                    
+                    printMatches.forEach(match => {
+                        output += match.replace(/print\s+["']/, '').replace(/["']/, '') + '\\n';
+                    });
+                    
+                    if (output.trim()) {
+                        executionOutput.innerHTML = `
+                            <div class="php-output">
+                                <h3 class="font-bold mb-4">PHP Output</h3>
+                                <pre class="output-area">${escapeHtml(output)}</pre>
+                            </div>
+                        `;
+                    } else {
+                        executionOutput.innerHTML = `
+                            <div class="run-output">
+                                <h3 class="font-bold mb-4">PHP Execution</h3>
+                                <div class="success-message">
+                                    <p>✓ PHP code executed successfully</p>
+                                    <p class="mt-2 text-sm">Note: Full PHP execution requires a server environment.</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    resolve();
+                });
             }
             
-            // เปลี่ยนภาษา
+            // Change language
             function changeLanguage(lang) {
                 if (lang === currentLanguage) return;
                 
-                // บันทึกโค้ดปัจจุบันก่อนเปลี่ยนภาษา
+                // Save current code
                 const currentCode = codeMirrorEditor.getValue();
                 localStorage.setItem(`codeTester_${currentLanguage}`, currentCode);
                 
-                // อัปเดตภาษาใหม่
+                // Update current language
                 currentLanguage = lang;
                 const langInfo = languageInfo[lang];
                 
-                // อัปเดต UI
+                // Update UI
                 currentLanguageEl.textContent = langInfo.name;
                 editorTitle.textContent = `${langInfo.name} Editor`;
+                previewTitle.textContent = `${langInfo.name} Output`;
                 
-                // อัปเดตไอคอนและสี
+                // Update language selector button
                 languageSelectorBtn.innerHTML = `
                     <i class="${langInfo.icon} ${langInfo.color}"></i>
                     <span>${langInfo.name}</span>
                     <i class="fas fa-chevron-down ml-1"></i>
                 `;
                 
-                // อัปเดตตัวเลือกใน dropdown
+                // Update dropdown active state
                 document.querySelectorAll('.language-option').forEach(option => {
                     option.classList.remove('active');
                     if (option.dataset.lang === lang) {
@@ -2056,112 +1688,29 @@ echo "==========================================\\n";
                     }
                 });
                 
-                // ตั้งค่า CodeMirror ใหม่สำหรับภาษาใหม่
-                setupCodeMirror();
-                
-                // โหลดโค้ดสำหรับภาษาใหม่
-                loadSavedCode();
-                
-                // อัปเดตชื่อไฟล์ดาวน์โหลด
+                // Update filename and extension
                 filenameInput.value = `my-code${langInfo.extension}`;
                 fileExtensionText.textContent = `ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ ${langInfo.extension}`;
                 
-                // เปลี่ยนแท็บตามภาษา
-                if (lang === 'html' || lang === 'javascript') {
-                    switchTab('preview');
-                } else {
-                    switchTab('console');
-                }
+                // Update CodeMirror mode
+                codeMirrorEditor.setOption('mode', langInfo.mode);
+                
+                // Load saved code for new language
+                loadSavedCode();
+                
+                // Clear output
+                executionOutput.innerHTML = `
+                    <div class="run-output">
+                        <div id="run-result" class="output-area">
+                            โหลดภาษา ${langInfo.name} สำเร็จ พร้อมใช้งาน
+                        </div>
+                    </div>
+                `;
                 
                 showNotification('เปลี่ยนภาษา', `เปลี่ยนภาษาเป็น ${langInfo.name}`, 'success');
             }
             
-            // เปลี่ยนแท็บ
-            function switchTab(tabName) {
-                // อัปเดตปุ่มแท็บ
-                outputTabs.forEach(tab => {
-                    tab.classList.remove('active');
-                    if (tab.dataset.tab === tabName) {
-                        tab.classList.add('active');
-                    }
-                });
-                
-                // อัปเดตเนื้อหา
-                outputContents.forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === `${tabName}-content`) {
-                        content.classList.add('active');
-                    }
-                });
-            }
-            
-            // แสดงหน้าจอใหญ่
-            function showScreenModal() {
-                screenModal.classList.add('show');
-                
-                // อัปเดตขนาดหน้าจอเริ่มต้น
-                updateScreenSize('desktop');
-            }
-            
-            // อัปเดตขนาดหน้าจอ
-            function updateScreenSize(size) {
-                currentScreenSize = size;
-                
-                // อัปเดตปุ่ม
-                mobileScreenBtn.classList.remove('active');
-                tabletScreenBtn.classList.remove('active');
-                desktopScreenBtn.classList.remove('active');
-                fullScreenBtn.classList.remove('active');
-                
-                // ตั้งค่าขนาด
-                const screenBody = document.querySelector('.screen-modal-body');
-                const screenFrame = document.getElementById('screen-frame');
-                
-                if (size === 'mobile') {
-                    mobileScreenBtn.classList.add('active');
-                    screenBody.style.maxWidth = '375px';
-                    screenBody.style.margin = '0 auto';
-                    screenFrame.style.width = '375px';
-                    screenFrame.style.height = '667px';
-                    screenSizeDisplay.textContent = 'ขนาด: มือถือ (375x667)';
-                } else if (size === 'tablet') {
-                    tabletScreenBtn.classList.add('active');
-                    screenBody.style.maxWidth = '768px';
-                    screenBody.style.margin = '0 auto';
-                    screenFrame.style.width = '768px';
-                    screenFrame.style.height = '1024px';
-                    screenSizeDisplay.textContent = 'ขนาด: แท็บเล็ต (768x1024)';
-                } else if (size === 'desktop') {
-                    desktopScreenBtn.classList.add('active');
-                    screenBody.style.maxWidth = '100%';
-                    screenBody.style.margin = '0';
-                    screenFrame.style.width = '100%';
-                    screenFrame.style.height = '100%';
-                    screenSizeDisplay.textContent = 'ขนาด: เดสก์ท็อป (100%)';
-                } else if (size === 'full') {
-                    fullScreenBtn.classList.add('active');
-                    screenBody.style.maxWidth = '100%';
-                    screenBody.style.margin = '0';
-                    screenFrame.style.width = '100%';
-                    screenFrame.style.height = '100%';
-                    screenSizeDisplay.textContent = 'ขนาด: เต็มจอ';
-                }
-                
-                // อัปเดต iframe สำหรับ HTML
-                if (currentLanguage === 'html') {
-                    try {
-                        const code = codeMirrorEditor.getValue();
-                        const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
-                        screenDoc.open();
-                        screenDoc.write(code);
-                        screenDoc.close();
-                    } catch (e) {
-                        console.error('Error updating screen frame:', e);
-                    }
-                }
-            }
-            
-            // สลับโหมดธีม
+            // Toggle theme
             function toggleTheme() {
                 const htmlElement = document.documentElement;
                 isDarkMode = !isDarkMode;
@@ -2172,58 +1721,20 @@ echo "==========================================\\n";
                     themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>ดาร์ก</span>';
                     themeToggle.classList.remove('bg-gray-200', 'text-gray-800');
                     themeToggle.classList.add('bg-gray-800', 'text-white');
-                    
-                    // อัปเดต CodeMirror theme
-                    if (codeMirrorEditor) {
-                        codeMirrorEditor.setOption('theme', 'dracula');
-                    }
-                    
-                    showNotification('เปลี่ยนธีม', 'เปลี่ยนเป็นธีมดาร์กโหมด', 'success');
+                    codeMirrorEditor.setOption('theme', 'dracula');
                 } else {
                     htmlElement.classList.remove('dark');
                     themeText.textContent = 'ไลต์';
                     themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>ไลต์</span>';
                     themeToggle.classList.remove('bg-gray-800', 'text-white');
                     themeToggle.classList.add('bg-gray-200', 'text-gray-800');
-                    
-                    // อัปเดต CodeMirror theme
-                    if (codeMirrorEditor) {
-                        codeMirrorEditor.setOption('theme', 'default');
-                    }
-                    
-                    showNotification('เปลี่ยนธีม', 'เปลี่ยนเป็นธีมไลต์โหมด', 'success');
+                    codeMirrorEditor.setOption('theme', 'default');
                 }
                 
-                // บันทึกการตั้งค่า
                 localStorage.setItem('codeTesterTheme', isDarkMode ? 'dark' : 'light');
             }
             
-            // สลับโหมด live update
-            function toggleLiveMode() {
-                isLiveMode = !isLiveMode;
-                
-                if (isLiveMode) {
-                    liveText.textContent = 'Live';
-                    liveStatusText.textContent = 'อัปเดตแบบเรียลไทม์';
-                    liveToggle.innerHTML = '<i class="fas fa-play"></i><span>Live</span>';
-                    liveToggle.classList.remove('bg-gray-600');
-                    liveToggle.classList.add('bg-green-600');
-                    liveIndicator.classList.remove('bg-gray-800', 'text-gray-400');
-                    liveIndicator.classList.add('bg-green-900', 'text-green-200');
-                    showNotification('อัปเดตแบบเรียลไทม์', 'เปิดโหมดอัปเดตแบบเรียลไทม์แล้ว', 'success');
-                } else {
-                    liveText.textContent = 'Paused';
-                    liveStatusText.textContent = 'หยุดอัปเดตชั่วคราว';
-                    liveToggle.innerHTML = '<i class="fas fa-pause"></i><span>Paused</span>';
-                    liveToggle.classList.remove('bg-green-600');
-                    liveToggle.classList.add('bg-gray-600');
-                    liveIndicator.classList.remove('bg-green-900', 'text-green-200');
-                    liveIndicator.classList.add('bg-gray-800', 'text-gray-400');
-                    showNotification('หยุดอัปเดตชั่วคราว', 'ปิดโหมดอัปเดตแบบเรียลไทม์แล้ว', 'warning');
-                }
-            }
-            
-            // สลับโหมดเต็มจอ
+            // Toggle fullscreen
             function toggleFullscreen() {
                 isFullscreen = !isFullscreen;
                 
@@ -2232,69 +1743,52 @@ echo "==========================================\\n";
                     fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i><span class="hidden md:inline">ย่อ</span>';
                     fullscreenBtn.classList.remove('bg-gray-700');
                     fullscreenBtn.classList.add('bg-yellow-600');
-                    
-                    // ซ่อน preview section
                     previewSection.style.display = 'none';
                     resizer.style.display = 'none';
-                    
-                    showNotification('โหมดเต็มจอ', 'เปิดโหมดเต็มจอแล้ว - กด ESC เพื่อออก', 'info');
                 } else {
                     editorSection.classList.remove('fullscreen');
                     fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i><span class="hidden md:inline">เต็มจอ</span>';
                     fullscreenBtn.classList.remove('bg-yellow-600');
                     fullscreenBtn.classList.add('bg-gray-700');
-                    
-                    // แสดง preview section
                     previewSection.style.display = 'flex';
                     resizer.style.display = 'block';
-                    
-                    showNotification('โหมดปกติ', 'ปิดโหมดเต็มจอแล้ว', 'success');
                 }
             }
             
-            // รีเซ็ตโค้ดเป็นค่าเริ่มต้น
+            // Reset code
             function resetCode() {
-                showCustomConfirm(
-                    'รีเซ็ตโค้ด',
-                    `คุณแน่ใจที่จะรีเซ็ตโค้ด ${languageInfo[currentLanguage].name} ทั้งหมด? การเปลี่ยนแปลงทั้งหมดจะหายไป`,
-                    function() {
-                        codeMirrorEditor.setValue(codeExamples[currentLanguage]);
-                        updatePreview();
-                        updateStats();
-                        showNotification('รีเซ็ตสำเร็จ', `รีเซ็ตโค้ด ${languageInfo[currentLanguage].name} เป็นค่าเริ่มต้นแล้ว`, 'success');
-                    }
-                );
+                if (confirm(`คุณแน่ใจที่จะรีเซ็ตโค้ด ${languageInfo[currentLanguage].name} ทั้งหมด?`)) {
+                    codeMirrorEditor.setValue(codeExamples[currentLanguage]);
+                    showNotification('รีเซ็ตสำเร็จ', `รีเซ็ตโค้ด ${languageInfo[currentLanguage].name} เป็นค่าเริ่มต้นแล้ว`, 'success');
+                }
             }
             
-            // แสดง modal ดาวน์โหลด
+            // Show download modal
             function showDownloadModal() {
                 downloadModal.classList.add('show');
                 filenameInput.focus();
                 filenameInput.select();
             }
             
-            // ซ่อน modal ดาวน์โหลด
+            // Hide download modal
             function hideDownloadModal() {
                 downloadModal.classList.remove('show');
             }
             
-            // ดาวน์โหลดไฟล์โค้ด
+            // Download code
             function downloadCode() {
                 const content = codeMirrorEditor.getValue();
                 const filename = filenameInput.value || `my-code${languageInfo[currentLanguage].extension}`;
                 
-                // สร้าง Blob จากเนื้อหา
                 const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 
-                // สร้าง element a สำหรับดาวน์โหลด
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 
-                // ล้างทรัพยากร
                 setTimeout(() => {
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
@@ -2304,77 +1798,29 @@ echo "==========================================\\n";
                 showNotification('ดาวน์โหลดสำเร็จ', `ดาวน์โหลดไฟล์ "${filename}" เรียบร้อยแล้ว`, 'success');
             }
             
-            // แสดงการแจ้งเตือนแบบสวยงาม
+            // Show notification
             function showNotification(title, message, type = 'success') {
-                // ตั้งค่าชื่อเรื่องและข้อความ
                 notificationTitle.textContent = title;
                 notificationText.textContent = message;
                 
-                // ตั้งค่าสีตามประเภท
                 notificationContent.className = 'notification-content';
-                if (type === 'success') {
-                    notificationContent.classList.add('notification-success');
-                } else if (type === 'error') {
-                    notificationContent.classList.add('notification-error');
-                } else if (type === 'warning') {
-                    notificationContent.classList.add('notification-warning');
-                } else if (type === 'info') {
-                    notificationContent.classList.add('notification-info');
-                }
+                notificationContent.classList.add(`notification-${type}`);
                 
-                // แสดงการแจ้งเตือน
                 notification.classList.add('show');
                 
-                // ซ่อนการแจ้งเตือนหลังจาก 4 วินาที
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 4000);
             }
             
-            // แสดงการยืนยันแบบสวยงามแทน confirm
-            function showCustomConfirm(title, message, onConfirm) {
-                const confirmModal = document.createElement('div');
-                confirmModal.className = 'modal show';
-                confirmModal.innerHTML = `
-                    <div class="modal-content">
-                        <h3 class="text-xl font-bold mb-4 flex items-center">
-                            <i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i> ${escapeHtml(title)}
-                        </h3>
-                        <div class="mb-6">
-                            <p class="text-gray-300">${escapeHtml(message)}</p>
-                        </div>
-                        <div class="flex justify-end space-x-3">
-                            <button id="custom-cancel" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
-                                ยกเลิก
-                            </button>
-                            <button id="custom-confirm" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
-                                ตกลง
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(confirmModal);
-                
-                // จัดการเหตุการณ์
-                document.getElementById('custom-cancel').addEventListener('click', function() {
-                    document.body.removeChild(confirmModal);
-                });
-                
-                document.getElementById('custom-confirm').addEventListener('click', function() {
-                    document.body.removeChild(confirmModal);
-                    onConfirm();
-                });
-                
-                // ปิดเมื่อคลิกภายนอก
-                confirmModal.addEventListener('click', function(e) {
-                    if (e.target === confirmModal) {
-                        document.body.removeChild(confirmModal);
-                    }
-                });
+            // Escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
             
-            // ตั้งค่า resizer
+            // Setup resizer
             function setupResizer() {
                 resizer.addEventListener('mousedown', function(e) {
                     isResizing = true;
@@ -2390,14 +1836,11 @@ echo "==========================================\\n";
                     const mouseX = e.clientX;
                     const containerLeft = document.querySelector('.split-container').getBoundingClientRect().left;
                     
-                    // คำนวณเปอร์เซ็นต์ความกว้าง
                     editorWidth = ((mouseX - containerLeft) / containerWidth) * 100;
                     
-                    // จำกัดขนาดขั้นต่ำและสูงสุด
                     if (editorWidth < 20) editorWidth = 20;
                     if (editorWidth > 80) editorWidth = 80;
                     
-                    // อัปเดตขนาด
                     editorSection.style.width = `${editorWidth}%`;
                     previewSection.style.width = `${100 - editorWidth}%`;
                 });
@@ -2407,13 +1850,10 @@ echo "==========================================\\n";
                         isResizing = false;
                         resizer.classList.remove('active');
                         document.body.style.cursor = '';
-                        
-                        // บันทึกขนาดที่ปรับ
                         localStorage.setItem('codeTesterEditorWidth', editorWidth);
                     }
                 });
                 
-                // โหลดขนาดที่บันทึกไว้
                 const savedWidth = localStorage.getItem('codeTesterEditorWidth');
                 if (savedWidth) {
                     editorWidth = parseFloat(savedWidth);
@@ -2422,139 +1862,59 @@ echo "==========================================\\n";
                 }
             }
             
-            // อัปเดต line numbers (สำหรับ textarea fallback)
-            function updateLineNumbers() {
-                const code = codeMirrorEditor.getValue();
-                const lines = code.split('\n').length;
-                const scrollInfo = codeMirrorEditor.getScrollInfo();
-                
-                // CodeMirror จัดการ line numbers ให้แล้ว
-                // ฟังก์ชันนี้เก็บไว้สำหรับความเข้ากันได้
-            }
-            
-            // ตั้งค่า keyboard shortcuts
+            // Setup keyboard shortcuts
             function setupKeyboardShortcuts() {
                 document.addEventListener('keydown', function(e) {
-                    // Ctrl+S เพื่อบันทึก
                     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                         e.preventDefault();
                         saveCode();
                     }
                     
-                    // Ctrl+Enter หรือ Ctrl+R เพื่อรันโค้ด
-                    if ((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.key === 'r')) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                         e.preventDefault();
                         runCode();
                     }
                     
-                    // Ctrl+D เพื่อสลับธีม
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-                        e.preventDefault();
-                        toggleTheme();
-                    }
-                    
-                    // Ctrl+L เพื่อสลับโหมด live
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
-                        e.preventDefault();
-                        toggleLiveMode();
-                    }
-                    
-                    // Ctrl+E เพื่อสลับเต็มจอ
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-                        e.preventDefault();
-                        toggleFullscreen();
-                    }
-                    
-                    // Ctrl+G เพื่อไปยังบรรทัด
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
-                        e.preventDefault();
-                        const line = prompt('ไปยังบรรทัดที่:');
-                        if (line && !isNaN(line)) {
-                            codeMirrorEditor.setCursor(parseInt(line) - 1, 0);
-                            codeMirrorEditor.focus();
-                        }
-                    }
-                    
-                    // Ctrl+1-6 เพื่อเปลี่ยนภาษา
-                    if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '6') {
-                        e.preventDefault();
-                        const langIndex = parseInt(e.key) - 1;
-                        const langs = ['html', 'javascript', 'python', 'csharp', 'cpp', 'php'];
-                        if (langs[langIndex]) {
-                            changeLanguage(langs[langIndex]);
-                        }
-                    }
-                    
-                    // F11 สำหรับเต็มจอ
                     if (e.key === 'F11') {
                         e.preventDefault();
                         toggleFullscreen();
                     }
                     
-                    // ESC เพื่อออกจากเต็มจอ
                     if (e.key === 'Escape' && isFullscreen) {
                         toggleFullscreen();
                     }
                     
-                    // ESC เพื่อปิด modal
-                    if (e.key === 'Escape') {
-                        if (screenModal.classList.contains('show')) {
-                            screenModal.classList.remove('show');
-                        }
-                        if (downloadModal.classList.contains('show')) {
-                            hideDownloadModal();
+                    if (e.key === 'Escape' && downloadModal.classList.contains('show')) {
+                        hideDownloadModal();
+                    }
+                    
+                    // Language switching with Ctrl+1-4
+                    if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '4') {
+                        e.preventDefault();
+                        const langs = ['html', 'javascript', 'python', 'php'];
+                        const langIndex = parseInt(e.key) - 1;
+                        if (langs[langIndex]) {
+                            changeLanguage(langs[langIndex]);
                         }
                     }
                 });
             }
             
-            // ตั้งค่า event listeners
+            // Setup event listeners
             function setupEventListeners() {
-                // ปุ่มรันโค้ด
                 runBtn.addEventListener('click', runCode);
                 quickRunBtn.addEventListener('click', runCode);
-                
-                // ปุ่มสลับธีม
                 themeToggle.addEventListener('click', toggleTheme);
-                
-                // ปุ่มสลับโหมด live
-                liveToggle.addEventListener('click', toggleLiveMode);
-                
-                // ปุ่มเต็มจอ
                 fullscreenBtn.addEventListener('click', toggleFullscreen);
-                
-                // ปุ่มรีเซ็ต
                 resetBtn.addEventListener('click', resetCode);
-                
-                // ปุ่มดาวน์โหลด
                 downloadBtn.addEventListener('click', showDownloadModal);
-                
-                // ปุ่มยืนยันดาวน์โหลด
                 confirmDownloadBtn.addEventListener('click', downloadCode);
-                
-                // ปุ่มยกเลิกดาวน์โหลด
                 cancelDownloadBtn.addEventListener('click', hideDownloadModal);
                 
-                // ปิด modal เมื่อคลิกภายนอก
-                downloadModal.addEventListener('click', function(e) {
-                    if (e.target === downloadModal) {
-                        hideDownloadModal();
-                    }
-                });
-                
-                // ดาวน์โหลดเมื่อกด Enter ในช่องชื่อไฟล์
-                filenameInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        downloadCode();
-                    }
-                });
-                
-                // Language selector
                 languageSelectorBtn.addEventListener('click', function() {
                     languageDropdown.classList.toggle('show');
                 });
                 
-                // เลือกภาษา
                 document.querySelectorAll('.language-option').forEach(option => {
                     option.addEventListener('click', function() {
                         const lang = this.dataset.lang;
@@ -2563,110 +1923,53 @@ echo "==========================================\\n";
                     });
                 });
                 
-                // ปิด language dropdown เมื่อคลิกภายนอก
                 document.addEventListener('click', function(e) {
                     if (!languageSelectorBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
                         languageDropdown.classList.remove('show');
                     }
                 });
                 
-                // ตัวอย่างโค้ด
                 exampleBtn.addEventListener('click', function() {
                     codeMirrorEditor.setValue(codeExamples[currentLanguage]);
-                    updatePreview();
-                    updateStats();
                     showNotification('โหลดตัวอย่าง', `โหลดตัวอย่างโค้ด ${languageInfo[currentLanguage].name}`, 'success');
                 });
                 
-                // Output tabs
-                outputTabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        const tabName = this.dataset.tab;
-                        switchTab(tabName);
-                    });
+                downloadModal.addEventListener('click', function(e) {
+                    if (e.target === downloadModal) {
+                        hideDownloadModal();
+                    }
                 });
                 
-                // Preview mode buttons
-                previewHtmlBtn.addEventListener('click', function() {
-                    switchTab('preview');
-                });
-                
-                previewConsoleBtn.addEventListener('click', function() {
-                    switchTab('console');
-                });
-                
-                previewScreenBtn.addEventListener('click', function() {
-                    showScreenModal();
-                });
-                
-                // Screen modal
-                closeScreenModal.addEventListener('click', function() {
-                    screenModal.classList.remove('show');
-                });
-                
-                mobileScreenBtn.addEventListener('click', function() {
-                    updateScreenSize('mobile');
-                });
-                
-                tabletScreenBtn.addEventListener('click', function() {
-                    updateScreenSize('tablet');
-                });
-                
-                desktopScreenBtn.addEventListener('click', function() {
-                    updateScreenSize('desktop');
-                });
-                
-                fullScreenBtn.addEventListener('click', function() {
-                    updateScreenSize('full');
-                });
-                
-                // ปิด screen modal เมื่อคลิกภายนอก
-                screenModal.addEventListener('click', function(e) {
-                    if (e.target === screenModal) {
-                        screenModal.classList.remove('show');
+                filenameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        downloadCode();
                     }
                 });
             }
             
-            // โหลดการตั้งค่าธีมที่บันทึกไว้
+            // Load theme
             function loadTheme() {
                 const savedTheme = localStorage.getItem('codeTesterTheme');
                 if (savedTheme === 'light') {
-                    isDarkMode = false;
-                    toggleTheme(); // เรียกเพื่อสลับไปยัง light mode
+                    toggleTheme();
                 }
             }
             
-            // เริ่มต้นแอปพลิเคชัน
+            // Initialize app
             function initApp() {
-                // โหลดธีมที่บันทึกไว้
                 loadTheme();
-                
-                // ตั้งค่า CodeMirror
-                setupCodeMirror();
-                
-                // ตั้งค่า event listeners
+                initCodeMirror();
                 setupEventListeners();
-                
-                // ตั้งค่า resizer
                 setupResizer();
-                
-                // ตั้งค่า keyboard shortcuts
                 setupKeyboardShortcuts();
-                
-                // โหลดโค้ดเริ่มต้น
                 loadSavedCode();
                 
-                // อัปเดตสถิติครั้งแรก
-                updateStats();
-                
-                // แสดงการต้อนรับ
                 setTimeout(() => {
                     showNotification('ยินดีต้อนรับ', 'Live Code Tester Pro พร้อมใช้งานแล้ว!', 'success');
                 }, 1000);
             }
             
-            // เรียกใช้ฟังก์ชันเริ่มต้น
+            // Start the app
             initApp();
         });
     </script>
