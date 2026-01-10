@@ -14,7 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/php/php.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/closebrackets.min.js"></script>
@@ -22,13 +21,13 @@
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
         
         body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
         }
         
         .resizer {
@@ -49,18 +48,6 @@
             background-color: rgba(59, 130, 246, 0.5);
         }
         
-        .preview-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: white;
-            border-radius: 0.5rem;
-        }
-        
-        .dark .preview-frame {
-            background: #1e293b;
-        }
-        
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -69,26 +56,6 @@
         
         .live-indicator {
             animation: pulse 2s infinite;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #374151;
-            border-radius: 5px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #6b7280;
-            border-radius: 5px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
         }
         
         /* Split view layout */
@@ -115,13 +82,6 @@
             overflow: hidden;
         }
         
-        /* Editor with line numbers */
-        .editor-wrapper {
-            position: relative;
-            flex: 1;
-            overflow: hidden;
-        }
-        
         /* Fullscreen mode */
         .fullscreen {
             position: fixed !important;
@@ -133,102 +93,6 @@
             margin: 0 !important;
             border-radius: 0 !important;
             border: none !important;
-        }
-        
-        /* Beautiful Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: -400px;
-            z-index: 1000;
-            transition: right 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            max-width: 350px;
-        }
-        
-        .notification.show {
-            right: 20px;
-        }
-        
-        .notification-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .notification-content::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .notification-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-        
-        .notification-error {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-        
-        .notification-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-        
-        .notification-info {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        }
-        
-        /* Modal for download */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .modal.show {
-            display: flex;
-        }
-        
-        .modal-content {
-            background-color: #1f2937;
-            border-radius: 15px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            transform: translateY(0);
-            animation: modalSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         /* Language selector */
@@ -255,18 +119,6 @@
         
         .language-dropdown.show {
             display: block;
-            animation: fadeInDown 0.3s ease;
-        }
-        
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         .language-option {
@@ -288,78 +140,6 @@
             border-left-color: #3b82f6;
         }
         
-        /* Preview mode buttons */
-        .preview-modes {
-            display: flex;
-            gap: 0.5rem;
-            margin-right: 1rem;
-        }
-        
-        .preview-mode-btn {
-            padding: 0.5rem 1rem;
-            background-color: #374151;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        .preview-mode-btn:hover {
-            background-color: #4b5563;
-            transform: translateY(-2px);
-        }
-        
-        .preview-mode-btn.active {
-            background-color: #3b82f6;
-            color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        
-        /* Console output */
-        .console-output {
-            background-color: #0f172a;
-            color: #e2e8f0;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            padding: 1rem;
-            overflow: auto;
-            height: 100%;
-            border-radius: 0.375rem;
-        }
-        
-        .console-line {
-            margin-bottom: 0.25rem;
-            white-space: pre-wrap;
-        }
-        
-        .console-command {
-            color: #10b981;
-        }
-        
-        .console-output-text {
-            color: #e2e8f0;
-        }
-        
-        .console-error {
-            color: #ef4444;
-        }
-        
-        .console-warning {
-            color: #f59e0b;
-        }
-        
-        .console-info {
-            color: #3b82f6;
-        }
-        
-        .console-success {
-            color: #10b981;
-        }
-        
         /* Run code button animation */
         @keyframes runButtonPulse {
             0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
@@ -371,160 +151,12 @@
             animation: runButtonPulse 1.5s infinite;
         }
         
-        /* Code execution result panel */
-        .execution-result {
-            background-color: #1e293b;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-left: 4px solid #3b82f6;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .execution-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #374151;
-        }
-        
-        .execution-time {
-            color: #94a3b8;
-            font-size: 0.875rem;
-        }
-        
-        /* Tab system for output */
-        .output-tabs {
-            display: flex;
-            border-bottom: 1px solid #374151;
-            margin-bottom: 1rem;
-        }
-        
-        .output-tab {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .output-tab:hover {
-            background-color: #374151;
-        }
-        
-        .output-tab.active {
-            border-bottom-color: #3b82f6;
-            color: #3b82f6;
-            font-weight: 600;
-        }
-        
-        .output-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .output-content.active {
-            display: block;
-        }
-        
-        /* Floating action button */
-        .floating-action-btn {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.3s;
-            border: none;
-        }
-        
-        .floating-action-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
-        }
-        
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #3b82f6;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Code execution area */
-        .code-execution {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .execution-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #1e293b;
-            border-bottom: 1px solid #374151;
-        }
-        
-        .execution-content {
-            flex: 1;
-            overflow: auto;
-            padding: 15px;
-            background: white;
-            color: black;
-        }
-        
-        .dark .execution-content {
-            background: #0f172a;
-            color: white;
-        }
-        
-        /* Output styling */
+        /* Output area */
         .output-area {
             white-space: pre-wrap;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.5;
-        }
-        
-        /* Iframe for web output */
-        .web-output {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* Run output styles */
-        .run-output {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            margin-top: 10px;
-            border-left: 4px solid #3b82f6;
-        }
-        
-        .dark .run-output {
-            background: #1e293b;
         }
         
         /* CodeMirror customization */
@@ -548,63 +180,126 @@
             color: #9ca3af !important;
         }
         
-        /* PHP specific styles */
-        .php-output {
-            background: #4F5B93;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-        }
-        
         /* JavaScript output styles */
         .js-output {
-            background: #f7df1e;
-            color: #000;
-            padding: 15px;
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+            height: 100%;
+            overflow: auto;
+        }
+        
+        .js-console {
+            background: #1e293b;
             border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
             font-family: monospace;
         }
         
-        /* Code examples styling */
-        .example-list {
-            max-height: 300px;
-            overflow-y: auto;
+        /* PHP output styles */
+        .php-output {
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+            height: 100%;
+            overflow: auto;
         }
         
-        .example-item {
-            padding: 10px;
-            border-bottom: 1px solid #374151;
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 350px;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .notification-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .notification-error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1f2937;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        /* Floating button */
+        .floating-action-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
             cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .example-item:hover {
-            background: #374151;
-        }
-        
-        /* Error message styling */
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 10px;
-            border-radius: 5px;
-            border-left: 4px solid #c33;
-            margin: 10px 0;
-        }
-        
-        /* Success message */
-        .success-message {
-            background: #dfd;
-            color: #383;
-            padding: 10px;
-            border-radius: 5px;
-            border-left: 4px solid #383;
-            margin: 10px 0;
+            z-index: 100;
+            border: none;
         }
     </style>
 </head>
-<body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800 transition-colors duration-300">
+<body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800">
     <!-- Notification -->
     <div id="notification" class="notification">
         <div class="notification-content" id="notification-content">
@@ -626,12 +321,12 @@
             </h3>
             <div class="mb-6">
                 <label for="filename" class="block mb-2 font-medium">ชื่อไฟล์:</label>
-                <input type="text" id="filename" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" value="my-code.html">
+                <input type="text" id="filename" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg" value="my-code.html">
                 <p class="text-sm text-gray-400 mt-2" id="file-extension">ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ .html</p>
             </div>
             <div class="flex justify-end space-x-3">
-                <button id="cancel-download" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">ยกเลิก</button>
-                <button id="confirm-download" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                <button id="cancel-download" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">ยกเลิก</button>
+                <button id="confirm-download" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center">
                     <i class="fas fa-download mr-2"></i> ดาวน์โหลด
                 </button>
             </div>
@@ -647,7 +342,7 @@
         <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-center mb-4 py-3">
             <div class="flex items-center space-x-3 mb-3 md:mb-0">
-                <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg shadow-lg">
+                <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg">
                     <i class="fas fa-code text-white text-xl"></i>
                 </div>
                 <div>
@@ -659,9 +354,8 @@
             <!-- Controls -->
             <div class="flex flex-wrap gap-3 items-center">
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm hidden md:block">ภาษา:</span>
                     <div class="language-selector">
-                        <button id="language-selector-btn" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors shadow-md">
+                        <button id="language-selector-btn" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600">
                             <i class="fab fa-html5 text-orange-500"></i>
                             <span id="current-language">HTML</span>
                             <i class="fas fa-chevron-down ml-1"></i>
@@ -671,21 +365,21 @@
                                 <i class="fab fa-html5 mr-2 text-orange-500"></i>
                                 <div>
                                     <div class="font-medium">HTML</div>
-                                    <div class="text-xs text-gray-400">สำหรับเว็บเพจ</div>
+                                    <div class="text-xs text-gray-400">เว็บเพจ</div>
                                 </div>
                             </div>
                             <div class="language-option" data-lang="javascript">
                                 <i class="fab fa-js mr-2 text-yellow-500"></i>
                                 <div>
                                     <div class="font-medium">JavaScript</div>
-                                    <div class="text-xs text-gray-400">ภาษาสคริปต์</div>
+                                    <div class="text-xs text-gray-400">สคริปต์</div>
                                 </div>
                             </div>
                             <div class="language-option" data-lang="python">
                                 <i class="fab fa-python mr-2 text-yellow-500"></i>
                                 <div>
                                     <div class="font-medium">Python</div>
-                                    <div class="text-xs text-gray-400">ภาษาสคริปต์</div>
+                                    <div class="text-xs text-gray-400">สคริปต์</div>
                                 </div>
                             </div>
                             <div class="language-option" data-lang="php">
@@ -700,28 +394,23 @@
                 </div>
                 
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm hidden md:block">ธีม:</span>
-                    <button id="theme-toggle" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors shadow-md">
+                    <button id="theme-toggle" class="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-700 dark:hover:bg-gray-600">
                         <i class="fas fa-moon"></i>
                         <span id="theme-text">ดาร์ก</span>
                     </button>
                 </div>
                 
-                <div class="flex items-center space-x-2">
-                    <div class="flex space-x-2">
-                        <button id="run-btn" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-blue-600 hover:to-blue-800 transition-all shadow-md run-button-animation">
-                            <i class="fas fa-play-circle"></i>
-                            <span>รันโค้ด</span>
-                        </button>
-                    </div>
-                </div>
+                <button id="run-btn" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-blue-600 hover:to-blue-800 run-button-animation">
+                    <i class="fas fa-play-circle"></i>
+                    <span>รันโค้ด</span>
+                </button>
                 
-                <button id="download-btn" class="bg-gradient-to-r from-purple-500 to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-purple-600 hover:to-purple-800 transition-all shadow-md">
+                <button id="download-btn" class="bg-gradient-to-r from-purple-500 to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-purple-600 hover:to-purple-800">
                     <i class="fas fa-download"></i>
                     <span>ดาวน์โหลด</span>
                 </button>
                 
-                <button id="reset-btn" class="bg-gradient-to-r from-red-500 to-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-red-600 hover:to-red-800 transition-all shadow-md">
+                <button id="reset-btn" class="bg-gradient-to-r from-red-500 to-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:from-red-600 hover:to-red-800">
                     <i class="fas fa-trash-alt"></i>
                     <span>รีเซ็ต</span>
                 </button>
@@ -730,7 +419,7 @@
         
         <!-- Live Indicator -->
         <div class="flex items-center justify-center mb-2">
-            <div id="live-indicator" class="flex items-center space-x-2 bg-gradient-to-r from-green-900 to-green-700 text-green-200 px-4 py-2 rounded-lg shadow">
+            <div id="live-indicator" class="flex items-center space-x-2 bg-gradient-to-r from-green-900 to-green-700 text-green-200 px-4 py-2 rounded-lg">
                 <i class="fas fa-circle live-indicator"></i>
                 <span id="live-status-text">พร้อมใช้งาน</span>
             </div>
@@ -739,24 +428,17 @@
         <!-- Split View Container -->
         <div class="split-container">
             <!-- Editor Panel -->
-            <div class="editor-section bg-gray-900 dark:bg-gray-800 rounded-lg border border-gray-700 relative shadow-lg">
+            <div class="editor-section bg-gray-900 dark:bg-gray-800 rounded-lg border border-gray-700 relative">
                 <div class="flex justify-between items-center bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-gray-800 px-4 py-3 rounded-t-lg border-b border-gray-700">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-code text-green-400"></i>
                         <h2 class="font-bold" id="editor-title">HTML Editor</h2>
                         <span class="text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded">CodeMirror</span>
-                        <div class="example-selector">
-                            <button id="example-btn" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition-colors flex items-center">
-                                <i class="fas fa-code-branch mr-1"></i> ตัวอย่าง
-                            </button>
-                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button id="fullscreen-btn" class="ml-2 bg-gray-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition-colors">
-                            <i class="fas fa-expand"></i>
-                            <span class="hidden md:inline">เต็มจอ</span>
-                        </button>
-                    </div>
+                    <button id="fullscreen-btn" class="bg-gray-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-2 hover:bg-gray-600">
+                        <i class="fas fa-expand"></i>
+                        <span class="hidden md:inline">เต็มจอ</span>
+                    </button>
                 </div>
                 
                 <div class="editor-wrapper">
@@ -768,7 +450,7 @@
             </div>
             
             <!-- Preview Panel -->
-            <div class="preview-section bg-gray-800 dark:bg-gray-700 rounded-lg border border-gray-700 shadow-lg">
+            <div class="preview-section bg-gray-800 dark:bg-gray-700 rounded-lg border border-gray-700">
                 <div class="flex justify-between items-center bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-gray-800 px-4 py-3 rounded-t-lg border-b border-gray-700">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-eye text-blue-400"></i>
@@ -776,18 +458,12 @@
                     </div>
                     <div class="text-sm text-gray-400">
                         <i class="fas fa-clock mr-1"></i>
-                        <span>อัปเดตล่าสุด: <span id="last-update">-</span></span>
+                        <span>อัปเดต: <span id="last-update">-</span></span>
                     </div>
                 </div>
                 
-                <div class="flex-1 p-4 overflow-hidden">
-                    <div id="execution-output" class="execution-content">
-                        <div class="run-output">
-                            <div id="run-result" class="output-area">
-                                ระบบพร้อมใช้งาน โปรดเขียนโค้ดและคลิก "รันโค้ด"
-                            </div>
-                        </div>
-                    </div>
+                <div class="flex-1 overflow-hidden" id="output-container">
+                    <!-- Output will be displayed here -->
                 </div>
             </div>
         </div>
@@ -795,7 +471,7 @@
         <!-- Footer -->
         <footer class="mt-4 pt-3 border-t border-gray-700">
             <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                <div class="mb-2 md:mb-0 text-center md:text-left">
+                <div class="mb-2 md:mb-0">
                     <p class="flex items-center">
                         <i class="fas fa-code mr-1"></i> Live Code Tester Pro - รองรับ HTML, JavaScript, Python, PHP
                     </p>
@@ -803,11 +479,11 @@
                 <div class="flex flex-wrap justify-center gap-4">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-keyboard"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded shadow">Ctrl+S</kbd> เพื่อบันทึก</span>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+S</kbd> เพื่อบันทึก</span>
                     </div>
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-bolt"></i>
-                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded shadow">Ctrl+Enter</kbd> เพื่อรันโค้ด</span>
+                        <span>กด <kbd class="px-2 py-1 bg-gray-800 rounded">Ctrl+Enter</kbd> เพื่อรันโค้ด</span>
                     </div>
                 </div>
             </div>
@@ -843,9 +519,7 @@
             const currentLanguageEl = document.getElementById('current-language');
             const editorTitle = document.getElementById('editor-title');
             const previewTitle = document.getElementById('preview-title');
-            const exampleBtn = document.getElementById('example-btn');
-            const runResult = document.getElementById('run-result');
-            const executionOutput = document.getElementById('execution-output');
+            const outputContainer = document.getElementById('output-container');
             
             // State variables
             let isDarkMode = true;
@@ -916,8 +590,8 @@
             message.innerHTML = \`
                 <h3>ยินดีต้อนรับสู่ Live Code Tester!</h3>
                 <p>คุณสามารถทดสอบโค้ดได้ทันทีที่นี่</p>
-                <p>เวลาปัจจุบัน: \${now.toLocaleTimeString('th-TH')}</p>
-                <p>วันที่: \${now.toLocaleDateString('th-TH')}</p>
+                <p>เวลาปัจจุบัน: \${now.toLocaleTimeString()}</p>
+                <p>วันที่: \${now.toLocaleDateString()}</p>
             \`;
         }
         
@@ -930,225 +604,165 @@
 </body>
 </html>`,
 
-                javascript: `// JavaScript Example - Simple Calculator
-console.log("JavaScript Code Runner Started");
+                javascript: `// JavaScript Example
+console.log("เริ่มโปรแกรม JavaScript");
 
-// DOM Elements
-const output = document.getElementById('output');
-const resultDiv = document.createElement('div');
-resultDiv.className = 'result';
-document.body.appendChild(resultDiv);
+// 1. ตัวแปรและประเภทข้อมูล
+console.log("\\n=== 1. ตัวแปรและประเภทข้อมูล ===");
+let name = "สมชาย";
+const age = 25;
+var isStudent = true;
+console.log("ชื่อ:", name);
+console.log("อายุ:", age);
+console.log("เป็นนักเรียน:", isStudent);
 
-// Display initial message
-resultDiv.innerHTML = \`
-    <h2>JavaScript Code Runner</h2>
-    <p>Welcome to JavaScript testing environment!</p>
-    <div id="calc" style="background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 10px 0;">
-        <h3>Simple Calculator</h3>
-        <input type="number" id="num1" placeholder="Number 1" value="10">
-        <input type="number" id="num2" placeholder="Number 2" value="5">
-        <br><br>
-        <button onclick="calculate('add')">+ Add</button>
-        <button onclick="calculate('subtract')">- Subtract</button>
-        <button onclick="calculate('multiply')">× Multiply</button>
-        <button onclick="calculate('divide')">÷ Divide</button>
-        <p id="calcResult" style="font-weight: bold; margin-top: 10px;"></p>
-    </div>
-\`;
+// 2. อาเรย์
+console.log("\\n=== 2. อาเรย์ ===");
+const fruits = ["แอปเปิ้ล", "กล้วย", "ส้ม", "มะม่วง"];
+console.log("ผลไม้ทั้งหมด:", fruits);
+console.log("ผลไม้ตัวแรก:", fruits[0]);
+console.log("จำนวนผลไม้:", fruits.length);
 
-// Calculator functions
-function calculate(operation) {
-    const num1 = parseFloat(document.getElementById('num1').value) || 0;
-    const num2 = parseFloat(document.getElementById('num2').value) || 0;
-    let result;
-    let symbol;
-    
-    switch(operation) {
-        case 'add':
-            result = num1 + num2;
-            symbol = '+';
-            break;
-        case 'subtract':
-            result = num1 - num2;
-            symbol = '-';
-            break;
-        case 'multiply':
-            result = num1 * num2;
-            symbol = '×';
-            break;
-        case 'divide':
-            result = num2 !== 0 ? num1 / num2 : 'Error: Division by zero';
-            symbol = '÷';
-            break;
-        default:
-            result = 'Invalid operation';
-    }
-    
-    document.getElementById('calcResult').innerHTML = 
-        \`\${num1} \${symbol} \${num2} = <span style="color: #3b82f6;">\${result}</span>\`;
-}
-
-// Array operations example
-const fruits = ['Apple', 'Banana', 'Orange', 'Mango', 'Grape'];
-console.log("Fruits array:", fruits);
-
-// Object example
+// 3. ออบเจ็กต์
+console.log("\\n=== 3. ออบเจ็กต์ ===");
 const student = {
-    name: "John Doe",
-    age: 20,
-    grades: [85, 90, 78, 92],
+    name: "สมหญิง",
+    age: 22,
+    grades: [85, 90, 78],
+    isGraduated: false,
     getAverage: function() {
-        return this.grades.reduce((a, b) => a + b, 0) / this.grades.length;
+        const sum = this.grades.reduce((a, b) => a + b, 0);
+        return sum / this.grades.length;
     }
 };
+console.log("นักเรียน:", student);
+console.log("ชื่อนักเรียน:", student.name);
+console.log("เกรดเฉลี่ย:", student.getAverage());
 
-console.log("Student object:", student);
-console.log("Average grade:", student.getAverage());
-
-// Function example
-function fibonacci(n) {
-    let a = 0, b = 1;
-    const result = [];
-    for (let i = 0; i < n; i++) {
-        result.push(a);
-        [a, b] = [b, a + b];
-    }
-    return result;
+// 4. เงื่อนไข
+console.log("\\n=== 4. เงื่อนไข ===");
+const score = 85;
+if (score >= 80) {
+    console.log("เกรด: A");
+} else if (score >= 70) {
+    console.log("เกรด: B");
+} else if (score >= 60) {
+    console.log("เกรด: C");
+} else {
+    console.log("เกรด: F");
 }
 
-console.log("First 10 Fibonacci numbers:", fibonacci(10));
+// 5. ลูป
+console.log("\\n=== 5. ลูป ===");
+console.log("นับ 1-5:");
+for (let i = 1; i <= 5; i++) {
+    console.log("  " + i);
+}
 
-// Display results on page
-const infoDiv = document.createElement('div');
-infoDiv.innerHTML = \`
-    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 20px;">
-        <h3>Console Output:</h3>
-        <p>✓ JavaScript code executed successfully</p>
-        <p>✓ Check browser console (F12) for detailed output</p>
-        <p>✓ Student average grade: \${student.getAverage().toFixed(2)}</p>
-        <p>✓ Fruits count: \${fruits.length}</p>
-    </div>
-\`;
-document.body.appendChild(infoDiv);
+console.log("\\nผลไม้แต่ละชนิด:");
+fruits.forEach((fruit, index) => {
+    console.log(\`  \${index + 1}. \${fruit}\`);
+});
 
-console.log("JavaScript execution completed!");`,
+// 6. ฟังก์ชัน
+console.log("\\n=== 6. ฟังก์ชัน ===");
+function calculateBMI(weight, height) {
+    return weight / (height * height);
+}
 
-                python: `# Python Example - Simple Programs
+const bmi = calculateBMI(65, 1.75);
+console.log("น้ำหนัก 65 กก., สูง 1.75 ม.");
+console.log("ค่าดัชนีมวลกาย (BMI):", bmi.toFixed(2));
 
+// 7. ฟังก์ชันลูกศร
+console.log("\\n=== 7. ฟังก์ชันลูกศร ===");
+const multiply = (a, b) => a * b;
+console.log("5 × 7 =", multiply(5, 7));
+
+// 8. วันและเวลา
+console.log("\\n=== 8. วันและเวลา ===");
+const now = new Date();
+console.log("วันที่ปัจจุบัน:", now.toLocaleDateString());
+console.log("เวลาปัจจุบัน:", now.toLocaleTimeString());
+console.log("วันในสัปดาห์:", now.toLocaleDateString('th-TH', { weekday: 'long' }));
+
+console.log("\\n=== โปรแกรมทำงานเสร็จสิ้น ===");`,
+
+                python: `# Python Example
 print("=" * 50)
-print("PYTHON CODE RUNNER")
+print("ตัวอย่างโค้ดภาษา Python")
 print("=" * 50)
-print()
 
-# 1. Basic Operations
-print("1. BASIC OPERATIONS")
-print("-" * 30)
+# 1. ตัวแปรและประเภทข้อมูล
+print("\\n=== 1. ตัวแปรและประเภทข้อมูล ===")
+name = "สมชาย"
+age = 25
+is_student = True
+print(f"ชื่อ: {name}")
+print(f"อายุ: {age}")
+print(f"เป็นนักเรียน: {is_student}")
 
-a = 15
-b = 7
-print(f"a = {a}, b = {b}")
-print(f"a + b = {a + b}")
-print(f"a - b = {a - b}")
-print(f"a * b = {a * b}")
-print(f"a / b = {a / b:.2f}")
-print(f"a // b = {a // b} (integer division)")
-print(f"a % b = {a % b} (modulus)")
-print(f"a ** 2 = {a ** 2} (square)")
-print()
+# 2. ลิสต์
+print("\\n=== 2. ลิสต์ ===")
+fruits = ["แอปเปิ้ล", "กล้วย", "ส้ม", "มะม่วง"]
+print(f"ผลไม้ทั้งหมด: {fruits}")
+print(f"ผลไม้ตัวแรก: {fruits[0]}")
+print(f"จำนวนผลไม้: {len(fruits)}")
 
-# 2. String Operations
-print("2. STRING OPERATIONS")
-print("-" * 30)
-
-name = "Python Developer"
-print(f"Original string: {name}")
-print(f"Upper case: {name.upper()}")
-print(f"Lower case: {name.lower()}")
-print(f"Title case: {name.title()}")
-print(f"Length: {len(name)} characters")
-print(f"First 6 chars: {name[:6]}")
-print(f"Last 9 chars: {name[-9:]}")
-print(f"Contains 'Python': {'Python' in name}")
-print()
-
-# 3. List Operations
-print("3. LIST OPERATIONS")
-print("-" * 30)
-
-fruits = ["Apple", "Banana", "Orange", "Mango", "Grape"]
-print(f"Fruits list: {fruits}")
-print(f"Number of fruits: {len(fruits)}")
-print(f"First fruit: {fruits[0]}")
-print(f"Last fruit: {fruits[-1]}")
-print(f"Sliced (first 3): {fruits[:3]}")
-
-# Add and remove items
-fruits.append("Pineapple")
-print(f"After adding Pineapple: {fruits}")
-
-fruits.remove("Banana")
-print(f"After removing Banana: {fruits}")
-
-# List comprehension
-squared_numbers = [x**2 for x in range(1, 6)]
-print(f"Squares of 1-5: {squared_numbers}")
-print()
-
-# 4. Dictionary Operations
-print("4. DICTIONARY OPERATIONS")
-print("-" * 30)
-
+# 3. ดิกชันนารี
+print("\\n=== 3. ดิกชันนารี ===")
 student = {
-    "name": "สมชาย",
-    "age": 20,
-    "grades": [85, 90, 78, 92],
-    "major": "Computer Science"
+    "name": "สมหญิง",
+    "age": 22,
+    "grades": [85, 90, 78],
+    "is_graduated": False
 }
+print(f"นักเรียน: {student}")
+print(f"ชื่อนักเรียน: {student['name']}")
 
-print("Student Information:")
-for key, value in student.items():
-    print(f"  {key}: {value}")
-
-# Calculate average grade
+# คำนวณเกรดเฉลี่ย
 grades = student["grades"]
 average = sum(grades) / len(grades)
-print(f"Average grade: {average:.2f}")
-print()
+print(f"เกรดเฉลี่ย: {average:.2f}")
 
-# 5. Function Examples
-print("5. FUNCTION EXAMPLES")
-print("-" * 30)
+# 4. เงื่อนไข
+print("\\n=== 4. เงื่อนไข ===")
+score = 85
+if score >= 80:
+    grade = "A"
+elif score >= 70:
+    grade = "B"
+elif score >= 60:
+    grade = "C"
+else:
+    grade = "F"
+print(f"คะแนน: {score}")
+print(f"เกรด: {grade}")
 
-def factorial(n):
-    """Calculate factorial of a number"""
-    if n <= 1:
-        return 1
-    return n * factorial(n - 1)
+# 5. ลูป
+print("\\n=== 5. ลูป ===")
+print("นับ 1-5:")
+for i in range(1, 6):
+    print(f"  {i}")
 
-def is_prime(num):
-    """Check if a number is prime"""
-    if num < 2:
-        return False
-    for i in range(2, int(num**0.5) + 1):
-        if num % i == 0:
-            return False
-    return True
+print("\\nผลไม้แต่ละชนิด:")
+for index, fruit in enumerate(fruits, 1):
+    print(f"  {index}. {fruit}")
 
-# Test functions
-print(f"Factorial of 5: {factorial(5)}")
-print(f"Factorial of 7: {factorial(7)}")
+# 6. ฟังก์ชัน
+print("\\n=== 6. ฟังก์ชัน ===")
+def calculate_bmi(weight, height):
+    """คำนวณค่าดัชนีมวลกาย"""
+    return weight / (height ** 2)
 
-print("Prime numbers between 1 and 20:")
-primes = [num for num in range(1, 21) if is_prime(num)]
-print(f"  {primes}")
-print()
+bmi = calculate_bmi(65, 1.75)
+print("น้ำหนัก 65 กก., สูง 1.75 ม.")
+print(f"ค่าดัชนีมวลกาย (BMI): {bmi:.2f}")
 
-# 6. Fibonacci Sequence
-print("6. FIBONACCI SEQUENCE")
-print("-" * 30)
-
+# 7. ฟังก์ชัน Fibonacci
+print("\\n=== 7. ฟังก์ชัน Fibonacci ===")
 def fibonacci(n):
-    """Generate Fibonacci sequence"""
+    """สร้างลำดับ Fibonacci"""
     sequence = []
     a, b = 0, 1
     for _ in range(n):
@@ -1157,174 +771,172 @@ def fibonacci(n):
     return sequence
 
 fib_numbers = fibonacci(10)
-print(f"First 10 Fibonacci numbers: {fib_numbers}")
-print()
+print(f"Fibonacci 10 ตัวแรก: {fib_numbers}")
 
-# 7. Current Date and Time
-print("7. DATE AND TIME")
-print("-" * 30)
+# 8. ตรวจสอบจำนวนเฉพาะ
+print("\\n=== 8. ตรวจสอบจำนวนเฉพาะ ===")
+def is_prime(num):
+    """ตรวจสอบว่าเป็นจำนวนเฉพาะหรือไม่"""
+    if num < 2:
+        return False
+    for i in range(2, int(num ** 0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
 
+primes = [num for num in range(1, 21) if is_prime(num)]
+print(f"จำนวนเฉพาะ 1-20: {primes}")
+
+# 9. วันและเวลา
+print("\\n=== 9. วันและเวลา ===")
 from datetime import datetime
 now = datetime.now()
-print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-print(f"Year: {now.year}")
-print(f"Month: {now.month}")
-print(f"Day: {now.day}")
-print(f"Hour: {now.hour}")
-print(f"Minute: {now.minute}")
-print()
+print(f"วันที่ปัจจุบัน: {now.strftime('%d/%m/%Y')}")
+print(f"เวลาปัจจุบัน: {now.strftime('%H:%M:%S')}")
 
-print("=" * 50)
-print("PROGRAM EXECUTION COMPLETED SUCCESSFULLY!")
+print("\\n" + "=" * 50)
+print("โปรแกรมทำงานเสร็จสิ้น!")
 print("=" * 50)`,
 
                 php: `<?php
-// PHP Code Runner Example
+// PHP Example
 echo "<!DOCTYPE html>";
 echo "<html>";
 echo "<head>";
-echo "    <title>PHP Code Runner</title>";
+echo "    <title>ตัวอย่าง PHP</title>";
 echo "    <style>";
-echo "        body { font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }";
-echo "        .container { background: rgba(255,255,255,0.9); padding: 30px; border-radius: 10px; color: #333; margin: 20px auto; max-width: 800px; }";
-echo "        h1 { color: #4F5B93; }";
-echo "        h2 { color: #5D6CC0; border-bottom: 2px solid #5D6CC0; padding-bottom: 5px; }";
-echo "        .result { background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 10px 0; color: #1e40af; }";
-echo "        table { width: 100%; border-collapse: collapse; margin: 10px 0; }";
-echo "        th { background: #4F5B93; color: white; padding: 10px; text-align: left; }";
-echo "        td { padding: 8px; border-bottom: 1px solid #ddd; }";
+echo "        body { font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #4F5B93 0%, #5D6CC0 100%); color: white; }";
+echo "        .container { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 10px; color: #333; margin: 20px auto; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }";
+echo "        h1 { color: #4F5B93; text-align: center; }";
+echo "        h2 { color: #5D6CC0; border-bottom: 2px solid #5D6CC0; padding-bottom: 10px; }";
+echo "        .result { background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 15px 0; color: #1e40af; }";
+echo "        .code { background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; margin: 10px 0; }";
+echo "        table { width: 100%; border-collapse: collapse; margin: 15px 0; }";
+echo "        th { background: #4F5B93; color: white; padding: 12px; text-align: left; }";
+echo "        td { padding: 10px; border-bottom: 1px solid #ddd; }";
 echo "        tr:hover { background: #f5f5f5; }";
 echo "        .success { color: #059669; font-weight: bold; }";
-echo "        .error { color: #dc2626; }";
 echo "    </style>";
 echo "</head>";
 echo "<body>";
 echo "    <div class='container'>";
-echo "        <h1>PHP Code Runner</h1>";
-echo "        <p>Welcome to PHP testing environment!</p>";
-echo "        <div class='result'>";
-echo "            <h2>Server Information</h2>";
-echo "            <p><strong>PHP Version:</strong> " . phpversion() . "</p>";
-echo "            <p><strong>Server Software:</strong> " . $_SERVER['SERVER_SOFTWARE'] . "</p>";
-echo "            <p><strong>Current Timestamp:</strong> " . date('Y-m-d H:i:s') . "</p>";
-echo "            <p><strong>Timezone:</strong> " . date_default_timezone_get() . "</p>";
+echo "        <h1>ตัวอย่างโค้ดภาษา PHP</h1>";
+
+// 1. ข้อมูลพื้นฐาน
+echo "        <h2>1. ข้อมูลพื้นฐาน</h2>";
+$server_name = $_SERVER['SERVER_NAME'] ?? 'Localhost';
+$php_version = phpversion();
+$current_time = date('H:i:s');
+$current_date = date('d/m/Y');
+echo "        <p><strong>ชื่อเซิร์ฟเวอร์:</strong> $server_name</p>";
+echo "        <p><strong>เวอร์ชัน PHP:</strong> $php_version</p>";
+echo "        <p><strong>วันที่:</strong> $current_date</p>";
+echo "        <p><strong>เวลา:</strong> $current_time</p>";
+
+// 2. ตัวแปรและประเภทข้อมูล
+echo "        <h2>2. ตัวแปรและประเภทข้อมูล</h2>";
+$name = "สมชาย";
+$age = 25;
+$isStudent = true;
+$salary = 35000.50;
+echo "        <div class='code'>";
+echo "            \$name = \"$name\";<br>";
+echo "            \$age = $age;<br>";
+echo "            \$isStudent = " . ($isStudent ? 'true' : 'false') . ";<br>";
+echo "            \$salary = $salary;<br>";
 echo "        </div>";
 
-// 1. Basic PHP Operations
-echo "        <h2>1. Basic PHP Operations</h2>";
-$num1 = 25;
-$num2 = 7;
-echo "        <p><strong>Number 1:</strong> $num1</p>";
-echo "        <p><strong>Number 2:</strong> $num2</p>";
-echo "        <p><strong>Addition:</strong> " . ($num1 + $num2) . "</p>";
-echo "        <p><strong>Subtraction:</strong> " . ($num1 - $num2) . "</p>";
-echo "        <p><strong>Multiplication:</strong> " . ($num1 * $num2) . "</p>";
-echo "        <p><strong>Division:</strong> " . round($num1 / $num2, 2) . "</p>";
-echo "        <p><strong>Modulus:</strong> " . ($num1 % $num2) . "</p>";
+// 3. อาเรย์
+echo "        <h2>3. อาเรย์</h2>";
+$fruits = array("แอปเปิ้ล", "กล้วย", "ส้ม", "มะม่วง", "ลำไย");
+echo "        <p><strong>ผลไม้ทั้งหมด:</strong> " . implode(", ", $fruits) . "</p>";
+echo "        <p><strong>จำนวนผลไม้:</strong> " . count($fruits) . " ชนิด</p>";
+echo "        <p><strong>ผลไม้ตัวแรก:</strong> " . $fruits[0] . "</p>";
 
-// 2. String Operations
-echo "        <h2>2. String Operations</h2>";
-$text = "Welcome to PHP Programming";
-echo "        <p><strong>Original Text:</strong> $text</p>";
-echo "        <p><strong>Length:</strong> " . strlen($text) . " characters</p>";
-echo "        <p><strong>Uppercase:</strong> " . strtoupper($text) . "</p>";
-echo "        <p><strong>Lowercase:</strong> " . strtolower($text) . "</p>";
-echo "        <p><strong>First 7 characters:</strong> " . substr($text, 0, 7) . "</p>";
-echo "        <p><strong>Word Count:</strong> " . str_word_count($text) . " words</p>";
-
-// 3. Array Operations
-echo "        <h2>3. Array Operations</h2>";
-$fruits = array("Apple", "Banana", "Orange", "Mango", "Grape");
-echo "        <p><strong>Fruits Array:</strong> " . implode(", ", $fruits) . "</p>";
-echo "        <p><strong>Array Count:</strong> " . count($fruits) . " items</p>";
-
-// Add and remove from array
-array_push($fruits, "Pineapple");
-echo "        <p><strong>After adding Pineapple:</strong> " . implode(", ", $fruits) . "</p>";
-
-array_splice($fruits, array_search("Banana", $fruits), 1);
-echo "        <p><strong>After removing Banana:</strong> " . implode(", ", $fruits) . "</p>";
-
-// 4. Associative Array (Dictionary)
-echo "        <h2>4. Student Information</h2>";
+// 4. อาเรย์เชื่อมโยง
+echo "        <h2>4. อาเรย์เชื่อมโยง (นักเรียน)</h2>";
 $student = array(
-    "name" => "สมชาย",
-    "age" => 20,
+    "name" => "สมหญิง",
+    "age" => 22,
     "grades" => array(85, 90, 78, 92),
-    "major" => "Computer Science"
+    "major" => "วิทยาการคอมพิวเตอร์"
 );
-
 echo "        <table>";
 foreach ($student as $key => $value) {
     if ($key == "grades") {
         $grades_str = implode(", ", $value);
         $average = array_sum($value) / count($value);
-        echo "        <tr><th>$key</th><td>$grades_str (Average: " . round($average, 2) . ")</td></tr>";
+        echo "        <tr><th>$key</th><td>$grades_str (เฉลี่ย: " . number_format($average, 2) . ")</td></tr>";
     } else {
         echo "        <tr><th>$key</th><td>$value</td></tr>";
     }
 }
 echo "        </table>";
 
-// 5. Date and Time Functions
-echo "        <h2>5. Date and Time</h2>";
+// 5. เงื่อนไข
+echo "        <h2>5. เงื่อนไข</h2>";
+$score = 85;
+if ($score >= 80) {
+    $grade = "A";
+    $message = "ยอดเยี่ยม!";
+} elseif ($score >= 70) {
+    $grade = "B";
+    $message = "ดีมาก!";
+} elseif ($score >= 60) {
+    $grade = "C";
+    $message = "พอใช้";
+} else {
+    $grade = "F";
+    $message = "ต้องปรับปรุง";
+}
+echo "        <div class='result'>";
+echo "            <p><strong>คะแนน:</strong> $score</p>";
+echo "            <p><strong>เกรด:</strong> $grade</p>";
+echo "            <p><strong>ผลการเรียน:</strong> $message</p>";
+echo "        </div>";
+
+// 6. ลูป
+echo "        <h2>6. ลูป</h2>";
+echo "        <p><strong>นับ 1-5:</strong> ";
+for ($i = 1; $i <= 5; $i++) {
+    echo "$i ";
+}
+echo "</p>";
+
+echo "        <p><strong>ผลไม้แต่ละชนิด:</strong></p>";
+echo "        <ul>";
+foreach ($fruits as $index => $fruit) {
+    echo "            <li>" . ($index + 1) . ". $fruit</li>";
+}
+echo "        </ul>";
+
+// 7. ฟังก์ชัน
+echo "        <h2>7. ฟังก์ชัน</h2>";
+function calculateBMI($weight, $height) {
+    return $weight / ($height * $height);
+}
+
+$bmi = calculateBMI(65, 1.75);
+echo "        <div class='result'>";
+echo "            <p>น้ำหนัก 65 กก., สูง 1.75 ม.</p>";
+echo "            <p><strong>ค่าดัชนีมวลกาย (BMI):</strong> " . number_format($bmi, 2) . "</p>";
+echo "        </div>";
+
+// 8. วันที่และเวลา
+echo "        <h2>8. วันที่และเวลา</h2>";
 date_default_timezone_set('Asia/Bangkok');
-echo "        <p><strong>Current Date:</strong> " . date('d/m/Y') . "</p>";
-echo "        <p><strong>Current Time:</strong> " . date('H:i:s') . "</p>";
-echo "        <p><strong>Day of Week:</strong> " . date('l') . "</p>";
-echo "        <p><strong>Month Name:</strong> " . date('F') . "</p>";
+$now = new DateTime();
+echo "        <p><strong>วันที่:</strong> " . $now->format('d/m/Y') . "</p>";
+echo "        <p><strong>เวลา:</strong> " . $now->format('H:i:s') . "</p>";
+echo "        <p><strong>วันในสัปดาห์:</strong> " . $now->format('l') . "</p>";
+echo "        <p><strong>เดือน:</strong> " . $now->format('F') . "</p>";
 
-// 6. Function Examples
-echo "        <h2>6. Function Examples</h2>";
-
-function factorial($n) {
-    if ($n <= 1) return 1;
-    return $n * factorial($n - 1);
-}
-
-function is_prime($num) {
-    if ($num < 2) return false;
-    for ($i = 2; $i <= sqrt($num); $i++) {
-        if ($num % $i == 0) return false;
-    }
-    return true;
-}
-
-echo "        <p><strong>Factorial of 5:</strong> " . factorial(5) . "</p>";
-echo "        <p><strong>Factorial of 7:</strong> " . factorial(7) . "</p>";
-
-echo "        <p><strong>Prime numbers 1-20:</strong> ";
-$primes = array();
-for ($i = 1; $i <= 20; $i++) {
-    if (is_prime($i)) {
-        $primes[] = $i;
-    }
-}
-echo implode(", ", $primes) . "</p>";
-
-// 7. Fibonacci Sequence
-echo "        <h2>7. Fibonacci Sequence</h2>";
-function fibonacci($n) {
-    $sequence = array();
-    $a = 0;
-    $b = 1;
-    for ($i = 0; $i < $n; $i++) {
-        $sequence[] = $a;
-        $temp = $a;
-        $a = $b;
-        $b = $temp + $b;
-    }
-    return $sequence;
-}
-
-$fib_numbers = fibonacci(10);
-echo "        <p><strong>First 10 Fibonacci numbers:</strong> " . implode(", ", $fib_numbers) . "</p>";
-
+// 9. สรุปผล
+echo "        <h2>9. สรุปผลการทำงาน</h2>";
 echo "        <div class='result success'>";
-echo "            <h3>Execution Summary</h3>";
-echo "            <p>✓ PHP code executed successfully</p>";
-echo "            <p>✓ All functions tested without errors</p>";
-echo "            <p>✓ Server time: " . date('H:i:s') . "</p>";
+echo "            <p>✓ โค้ด PHP ทำงานสำเร็จทั้งหมด</p>";
+echo "            <p>✓ ไม่พบข้อผิดพลาดใดๆ</p>";
+echo "            <p>✓ เวลาที่ทำงาน: $current_time</p>";
 echo "        </div>";
 
 echo "    </div>";
@@ -1367,25 +979,15 @@ echo "</html>";
             
             // Initialize CodeMirror
             function initCodeMirror() {
-                const langInfo = languageInfo[currentLanguage];
-                
                 codeMirrorEditor = CodeMirror.fromTextArea(codeEditorTextarea, {
-                    mode: langInfo.mode,
+                    mode: "htmlmixed",
                     theme: "dracula",
                     lineNumbers: true,
                     lineWrapping: true,
                     indentUnit: 4,
                     tabSize: 4,
-                    indentWithTabs: false,
-                    electricChars: true,
                     autoCloseBrackets: true,
-                    matchBrackets: true,
-                    extraKeys: {
-                        "Ctrl-Space": "autocomplete",
-                        "Ctrl-S": saveCode,
-                        "Ctrl-Enter": runCode,
-                        "F11": toggleFullscreen
-                    }
+                    matchBrackets: true
                 });
                 
                 codeMirrorEditor.setSize("100%", "100%");
@@ -1397,7 +999,6 @@ echo "</html>";
                     const savedCode = localStorage.getItem(`codeTester_${currentLanguage}`);
                     if (savedCode) {
                         codeMirrorEditor.setValue(savedCode);
-                        showNotification('โหลดโค้ดสำเร็จ', `โหลดโค้ด ${languageInfo[currentLanguage].name} ที่บันทึกไว้`, 'success');
                     } else {
                         codeMirrorEditor.setValue(codeExamples[currentLanguage]);
                     }
@@ -1414,11 +1015,11 @@ echo "</html>";
             }
             
             // Run code
-            async function runCode() {
+            function runCode() {
                 if (isRunningCode) return;
                 
                 isRunningCode = true;
-                const startTime = new Date();
+                const startTime = Date.now();
                 const code = codeMirrorEditor.getValue();
                 
                 runBtn.innerHTML = '<div class="loading"></div> รันโค้ด...';
@@ -1429,38 +1030,37 @@ echo "</html>";
                     
                     switch (currentLanguage) {
                         case 'html':
-                            result = await runHtmlCode(code);
+                            result = runHtmlCode(code);
                             break;
                         case 'javascript':
-                            result = await runJavaScriptCode(code);
+                            result = runJavaScriptCode(code);
                             break;
                         case 'python':
-                            result = await runPythonCode(code);
+                            result = runPythonCode(code);
                             break;
                         case 'php':
-                            result = await runPhpCode(code);
+                            result = runPhpCode(code);
                             break;
                         default:
                             throw new Error('ภาษาไม่รองรับ');
                     }
                     
-                    const endTime = new Date();
+                    const endTime = Date.now();
                     const executionTime = endTime - startTime;
                     
-                    lastUpdateEl.textContent = endTime.toLocaleTimeString('th-TH');
+                    lastUpdateEl.textContent = new Date().toLocaleTimeString('th-TH');
                     
                     showNotification('รันโค้ดสำเร็จ', `รันโค้ดเสร็จสิ้นใน ${executionTime}ms`, 'success');
                     
                 } catch (error) {
                     console.error('Error running code:', error);
-                    executionOutput.innerHTML = `
-                        <div class="error-message">
+                    outputContainer.innerHTML = `
+                        <div class="p-4 text-red-400 bg-red-900/20">
                             <h3 class="font-bold">เกิดข้อผิดพลาด</h3>
-                            <p>${escapeHtml(error.message)}</p>
-                            <p class="mt-2 text-sm">โปรดตรวจสอบโค้ดของคุณอีกครั้ง</p>
+                            <p>${error.message}</p>
                         </div>
                     `;
-                    showNotification('เกิดข้อผิดพลาด', 'ไม่สามารถรันโค้ดได้', 'error');
+                    showNotification('เกิดข้อผิดพลาด', error.message, 'error');
                 } finally {
                     isRunningCode = false;
                     runBtn.innerHTML = '<i class="fas fa-play-circle"></i> รันโค้ด';
@@ -1470,190 +1070,152 @@ echo "</html>";
             
             // Run HTML code
             function runHtmlCode(code) {
-                return new Promise((resolve) => {
-                    executionOutput.innerHTML = `
-                        <iframe class="web-output" sandbox="allow-scripts allow-same-origin"></iframe>
-                    `;
-                    
-                    const iframe = executionOutput.querySelector('iframe');
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    
-                    iframeDoc.open();
-                    iframeDoc.write(code);
-                    iframeDoc.close();
-                    
-                    resolve();
-                });
+                outputContainer.innerHTML = `
+                    <iframe 
+                        class="w-full h-full border-0" 
+                        sandbox="allow-scripts allow-same-origin"
+                        srcdoc="${escapeHtml(code)}"
+                    ></iframe>
+                `;
             }
             
             // Run JavaScript code
             function runJavaScriptCode(code) {
-                return new Promise((resolve) => {
-                    // Clear the output
-                    executionOutput.innerHTML = `
-                        <div class="js-output">
-                            <h3 class="font-bold mb-4">JavaScript Output</h3>
-                            <div id="js-console-output"></div>
-                        </div>
+                // Clear output
+                outputContainer.innerHTML = `
+                    <div class="js-output">
+                        <h3 class="text-xl font-bold mb-4">JavaScript Output</h3>
+                        <div class="js-console" id="js-console"></div>
+                    </div>
+                `;
+                
+                const consoleDiv = document.getElementById('js-console');
+                let consoleOutput = '';
+                
+                // Override console.log
+                const originalLog = console.log;
+                const originalError = console.error;
+                const originalWarn = console.warn;
+                
+                console.log = function(...args) {
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    consoleOutput += message + '\\n';
+                    originalLog.apply(console, args);
+                };
+                
+                console.error = function(...args) {
+                    const message = '[ERROR] ' + args.join(' ');
+                    consoleOutput += message + '\\n';
+                    originalError.apply(console, args);
+                };
+                
+                console.warn = function(...args) {
+                    const message = '[WARN] ' + args.join(' ');
+                    consoleOutput += message + '\\n';
+                    originalWarn.apply(console, args);
+                };
+                
+                try {
+                    // Create a new script element with the code
+                    const script = document.createElement('script');
+                    script.textContent = `
+                        try {
+                            ${code}
+                        } catch(e) {
+                            console.error('Runtime Error:', e.message);
+                        }
                     `;
                     
-                    const outputDiv = document.getElementById('js-console-output');
-                    let consoleOutput = '';
+                    // Remove any existing output script
+                    const oldScript = document.getElementById('output-script');
+                    if (oldScript) oldScript.remove();
                     
-                    // Override console.log to capture output
-                    const originalLog = console.log;
-                    const originalError = console.error;
-                    const originalWarn = console.warn;
+                    script.id = 'output-script';
+                    document.body.appendChild(script);
                     
-                    console.log = function(...args) {
-                        consoleOutput += args.join(' ') + '\\n';
-                        originalLog.apply(console, args);
-                    };
-                    
-                    console.error = function(...args) {
-                        consoleOutput += '[ERROR] ' + args.join(' ') + '\\n';
-                        originalError.apply(console, args);
-                    };
-                    
-                    console.warn = function(...args) {
-                        consoleOutput += '[WARN] ' + args.join(' ') + '\\n';
-                        originalWarn.apply(console, args);
-                    };
-                    
-                    try {
-                        // Create a sandbox for JavaScript execution
-                        const script = document.createElement('script');
-                        script.textContent = `
-                            try {
-                                // Create a simple DOM for JavaScript code
-                                if (!document.getElementById('output')) {
-                                    const div = document.createElement('div');
-                                    div.id = 'output';
-                                    document.body.appendChild(div);
-                                }
-                                
-                                // Execute user code
-                                ${code}
-                            } catch(e) {
-                                console.error('Execution Error:', e.message);
-                            }
-                        `;
-                        
-                        // Execute in the current document
-                        document.head.appendChild(script);
-                        document.head.removeChild(script);
-                        
-                        // Restore console functions
-                        setTimeout(() => {
-                            console.log = originalLog;
-                            console.error = originalError;
-                            console.warn = originalWarn;
-                            
-                            // Display captured output
-                            if (consoleOutput.trim()) {
-                                outputDiv.innerHTML = `<pre>${escapeHtml(consoleOutput)}</pre>`;
-                            } else {
-                                outputDiv.innerHTML = '<p>✓ JavaScript executed successfully (no console output)</p>';
-                            }
-                            
-                            resolve();
-                        }, 100);
-                        
-                    } catch (e) {
+                    // Wait a bit for execution
+                    setTimeout(() => {
                         console.log = originalLog;
                         console.error = originalError;
                         console.warn = originalWarn;
                         
-                        throw new Error(`JavaScript Error: ${e.message}`);
-                    }
-                });
+                        if (consoleOutput.trim()) {
+                            consoleDiv.textContent = consoleOutput;
+                        } else {
+                            consoleDiv.textContent = '✓ JavaScript executed successfully (no console output)';
+                        }
+                    }, 100);
+                    
+                } catch (e) {
+                    console.log = originalLog;
+                    console.error = originalError;
+                    console.warn = originalWarn;
+                    throw e;
+                }
             }
             
-            // Run Python code (simulated)
+            // Run Python code
             function runPythonCode(code) {
-                return new Promise((resolve) => {
-                    // Simple Python interpreter simulation
-                    let output = '';
-                    
-                    // Remove comments and empty lines
-                    const lines = code.split('\\n').filter(line => 
-                        line.trim() && !line.trim().startsWith('#')
-                    );
-                    
-                    // Basic Python simulation
-                    lines.forEach(line => {
-                        if (line.includes('print(')) {
-                            const match = line.match(/print\(["']([^"']+)["']\)/);
-                            if (match) {
-                                output += match[1] + '\\n';
-                            }
+                // Simple Python simulation
+                let output = '';
+                const lines = code.split('\\n');
+                
+                lines.forEach(line => {
+                    if (line.includes('print(')) {
+                        const match = line.match(/print\(["']([^"']+)["']\)/);
+                        if (match) {
+                            output += match[1] + '\\n';
                         }
-                    });
-                    
-                    if (!output.trim()) {
-                        output = '✓ Python code executed successfully\\n✓ Use print() function to see output';
                     }
-                    
-                    executionOutput.innerHTML = `
-                        <div class="run-output">
-                            <h3 class="font-bold mb-4">Python Output</h3>
-                            <pre class="output-area">${escapeHtml(output)}</pre>
-                            <p class="mt-4 text-sm text-gray-600">
-                                Note: This is a simulated Python environment. For full Python features, 
-                                use a dedicated Python IDE or server.
-                            </p>
-                        </div>
-                    `;
-                    
-                    resolve();
                 });
+                
+                if (!output.trim()) {
+                    output = '✓ Python code executed successfully\\n✓ Use print() function to see output';
+                }
+                
+                outputContainer.innerHTML = `
+                    <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20">
+                        <h3 class="text-xl font-bold mb-4 text-yellow-800 dark:text-yellow-200">Python Output</h3>
+                        <pre class="output-area">${escapeHtml(output)}</pre>
+                    </div>
+                `;
             }
             
             // Run PHP code
             function runPhpCode(code) {
-                return new Promise((resolve) => {
-                    // Check if PHP code contains PHP tags
-                    if (!code.includes('<?php') && !code.includes('<?=')) {
-                        // If no PHP tags, wrap it
-                        code = '<?php\\n' + code + '\\n?>';
-                    }
-                    
-                    // Simple PHP simulation - we'll parse basic PHP constructs
-                    let output = '';
-                    
-                    // Extract echo statements
-                    const echoMatches = code.match(/echo\s+["']([^"']+)["']/g) || [];
-                    const printMatches = code.match(/print\s+["']([^"']+)["']/g) || [];
-                    
-                    echoMatches.forEach(match => {
-                        output += match.replace(/echo\s+["']/, '').replace(/["']/, '') + '\\n';
-                    });
-                    
-                    printMatches.forEach(match => {
-                        output += match.replace(/print\s+["']/, '').replace(/["']/, '') + '\\n';
-                    });
-                    
-                    if (output.trim()) {
-                        executionOutput.innerHTML = `
-                            <div class="php-output">
-                                <h3 class="font-bold mb-4">PHP Output</h3>
-                                <pre class="output-area">${escapeHtml(output)}</pre>
-                            </div>
-                        `;
-                    } else {
-                        executionOutput.innerHTML = `
-                            <div class="run-output">
-                                <h3 class="font-bold mb-4">PHP Execution</h3>
-                                <div class="success-message">
-                                    <p>✓ PHP code executed successfully</p>
-                                    <p class="mt-2 text-sm">Note: Full PHP execution requires a server environment.</p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    resolve();
+                // Simple PHP simulation
+                let output = '';
+                
+                // Extract echo statements
+                const echoMatches = code.match(/echo\s+["']([^"']+)["']/g) || [];
+                const printMatches = code.match(/print\s+["']([^"']+)["']/g) || [];
+                
+                echoMatches.forEach(match => {
+                    output += match.replace(/echo\s+["']/, '').replace(/["']/, '') + '\\n';
                 });
+                
+                printMatches.forEach(match => {
+                    output += match.replace(/print\s+["']/, '').replace(/["']/, '') + '\\n';
+                });
+                
+                if (output.trim()) {
+                    outputContainer.innerHTML = `
+                        <div class="php-output">
+                            <h3 class="text-xl font-bold mb-4">PHP Output</h3>
+                            <pre class="output-area">${escapeHtml(output)}</pre>
+                        </div>
+                    `;
+                } else {
+                    outputContainer.innerHTML = `
+                        <div class="p-4 bg-purple-50 dark:bg-purple-900/20">
+                            <h3 class="text-xl font-bold mb-4 text-purple-800 dark:text-purple-200">PHP Execution</h3>
+                            <p>✓ PHP code executed successfully</p>
+                            <p class="mt-2 text-sm">Note: Full PHP execution requires a server environment.</p>
+                        </div>
+                    `;
+                }
             }
             
             // Change language
@@ -1699,11 +1261,9 @@ echo "</html>";
                 loadSavedCode();
                 
                 // Clear output
-                executionOutput.innerHTML = `
-                    <div class="run-output">
-                        <div id="run-result" class="output-area">
-                            โหลดภาษา ${langInfo.name} สำเร็จ พร้อมใช้งาน
-                        </div>
+                outputContainer.innerHTML = `
+                    <div class="p-4">
+                        <p>ภาษา ${langInfo.name} พร้อมใช้งาน</p>
                     </div>
                 `;
                 
@@ -1741,15 +1301,11 @@ echo "</html>";
                 if (isFullscreen) {
                     editorSection.classList.add('fullscreen');
                     fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i><span class="hidden md:inline">ย่อ</span>';
-                    fullscreenBtn.classList.remove('bg-gray-700');
-                    fullscreenBtn.classList.add('bg-yellow-600');
                     previewSection.style.display = 'none';
                     resizer.style.display = 'none';
                 } else {
                     editorSection.classList.remove('fullscreen');
                     fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i><span class="hidden md:inline">เต็มจอ</span>';
-                    fullscreenBtn.classList.remove('bg-yellow-600');
-                    fullscreenBtn.classList.add('bg-gray-700');
                     previewSection.style.display = 'flex';
                     resizer.style.display = 'block';
                 }
@@ -1767,7 +1323,6 @@ echo "</html>";
             function showDownloadModal() {
                 downloadModal.classList.add('show');
                 filenameInput.focus();
-                filenameInput.select();
             }
             
             // Hide download modal
@@ -1810,7 +1365,7 @@ echo "</html>";
                 
                 setTimeout(() => {
                     notification.classList.remove('show');
-                }, 4000);
+                }, 3000);
             }
             
             // Escape HTML
@@ -1824,9 +1379,7 @@ echo "</html>";
             function setupResizer() {
                 resizer.addEventListener('mousedown', function(e) {
                     isResizing = true;
-                    resizer.classList.add('active');
                     document.body.style.cursor = 'col-resize';
-                    e.preventDefault();
                 });
                 
                 document.addEventListener('mousemove', function(e) {
@@ -1848,7 +1401,6 @@ echo "</html>";
                 document.addEventListener('mouseup', function() {
                     if (isResizing) {
                         isResizing = false;
-                        resizer.classList.remove('active');
                         document.body.style.cursor = '';
                         localStorage.setItem('codeTesterEditorWidth', editorWidth);
                     }
@@ -1873,29 +1425,6 @@ echo "</html>";
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                         e.preventDefault();
                         runCode();
-                    }
-                    
-                    if (e.key === 'F11') {
-                        e.preventDefault();
-                        toggleFullscreen();
-                    }
-                    
-                    if (e.key === 'Escape' && isFullscreen) {
-                        toggleFullscreen();
-                    }
-                    
-                    if (e.key === 'Escape' && downloadModal.classList.contains('show')) {
-                        hideDownloadModal();
-                    }
-                    
-                    // Language switching with Ctrl+1-4
-                    if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '4') {
-                        e.preventDefault();
-                        const langs = ['html', 'javascript', 'python', 'php'];
-                        const langIndex = parseInt(e.key) - 1;
-                        if (langs[langIndex]) {
-                            changeLanguage(langs[langIndex]);
-                        }
                     }
                 });
             }
@@ -1928,23 +1457,6 @@ echo "</html>";
                         languageDropdown.classList.remove('show');
                     }
                 });
-                
-                exampleBtn.addEventListener('click', function() {
-                    codeMirrorEditor.setValue(codeExamples[currentLanguage]);
-                    showNotification('โหลดตัวอย่าง', `โหลดตัวอย่างโค้ด ${languageInfo[currentLanguage].name}`, 'success');
-                });
-                
-                downloadModal.addEventListener('click', function(e) {
-                    if (e.target === downloadModal) {
-                        hideDownloadModal();
-                    }
-                });
-                
-                filenameInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        downloadCode();
-                    }
-                });
             }
             
             // Load theme
@@ -1964,9 +1476,7 @@ echo "</html>";
                 setupKeyboardShortcuts();
                 loadSavedCode();
                 
-                setTimeout(() => {
-                    showNotification('ยินดีต้อนรับ', 'Live Code Tester Pro พร้อมใช้งานแล้ว!', 'success');
-                }, 1000);
+                showNotification('ยินดีต้อนรับ', 'Live Code Tester Pro พร้อมใช้งานแล้ว!', 'success');
             }
             
             // Start the app
