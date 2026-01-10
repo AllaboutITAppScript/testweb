@@ -10,6 +10,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Animate.css for animations -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Monaco Editor (CodeMirror fallback) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
+    <!-- Skulpt สำหรับรัน Python ในเบราว์เซอร์ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/skulpt/1.2.0/skulpt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/skulpt/1.2.0/skulpt-stdlib.js"></script>
+    <!-- PHP.js สำหรับรัน PHP ในเบราว์เซอร์ -->
+    <script src="https://cdn.jsdelivr.net/npm/php-wasm@latest/dist/index.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -181,6 +195,21 @@
             overflow-wrap: normal;
             overflow: auto;
             z-index: 2;
+        }
+        
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+            font-size: 14px !important;
+        }
+        
+        .CodeMirror-gutters {
+            background-color: #1f2937 !important;
+            border-right: 1px solid #374151 !important;
+        }
+        
+        .CodeMirror-linenumber {
+            color: #9ca3af !important;
         }
         
         /* Fullscreen mode */
@@ -621,6 +650,79 @@
             50% { background-color: rgba(59, 130, 246, 0.5); }
             100% { background-color: rgba(59, 130, 246, 0.3); }
         }
+        
+        /* Code execution area */
+        .code-execution {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .execution-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #1e293b;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .execution-content {
+            flex: 1;
+            overflow: auto;
+            padding: 15px;
+            background: white;
+            color: black;
+        }
+        
+        .dark .execution-content {
+            background: #0f172a;
+            color: white;
+        }
+        
+        /* Output styling for different languages */
+        .output-area {
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Iframe for web output */
+        .web-output {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Run output styles */
+        .run-output {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .dark .run-output {
+            background: #1e293b;
+        }
+        
+        /* Syntax highlighting */
+        .cm-s-dracula.CodeMirror {
+            background-color: #1e293b !important;
+            color: #f8f8f2 !important;
+        }
+        
+        .cm-s-dracula .CodeMirror-gutters {
+            background-color: #1e293b !important;
+            border-right: 1px solid #374151 !important;
+        }
+        
+        .cm-s-dracula .CodeMirror-linenumber {
+            color: #9ca3af !important;
+        }
     </style>
 </head>
 <body class="dark:bg-gray-900 dark:text-gray-200 bg-gray-100 text-gray-800 transition-colors duration-300">
@@ -727,6 +829,13 @@
                                     <div class="text-xs text-gray-400">สำหรับเว็บเพจ</div>
                                 </div>
                             </div>
+                            <div class="language-option" data-lang="javascript">
+                                <i class="fab fa-js mr-2 text-yellow-500"></i>
+                                <div>
+                                    <div class="font-medium">JavaScript</div>
+                                    <div class="text-xs text-gray-400">ภาษาสคริปต์</div>
+                                </div>
+                            </div>
                             <div class="language-option" data-lang="python">
                                 <i class="fab fa-python mr-2 text-yellow-500"></i>
                                 <div>
@@ -746,13 +855,6 @@
                                 <div>
                                     <div class="font-medium">C++</div>
                                     <div class="text-xs text-gray-400">ภาษาเชิงระบบ</div>
-                                </div>
-                            </div>
-                            <div class="language-option" data-lang="c">
-                                <i class="fas fa-cog mr-2 text-blue-300"></i>
-                                <div>
-                                    <div class="font-medium">C</div>
-                                    <div class="text-xs text-gray-400">ภาษาโปรแกรมพื้นฐาน</div>
                                 </div>
                             </div>
                             <div class="language-option" data-lang="php">
@@ -856,7 +958,7 @@
                     <div class="flex items-center">
                         <div class="preview-modes">
                             <button id="preview-html" class="preview-mode-btn active">
-                                <i class="fas fa-code"></i> HTML Preview
+                                <i class="fas fa-code"></i> Preview
                             </button>
                             <button id="preview-console" class="preview-mode-btn">
                                 <i class="fas fa-terminal"></i> Console
@@ -882,7 +984,19 @@
                     
                     <!-- Output Contents -->
                     <div id="preview-content" class="output-content active h-full">
-                        <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+                        <div class="code-execution">
+                            <div class="execution-header">
+                                <h4 class="font-bold">ผลลัพธ์</h4>
+                                <div class="text-sm text-gray-500">แสดงผลการรันโค้ดที่นี่</div>
+                            </div>
+                            <div id="execution-output" class="execution-content">
+                                <div class="run-output">
+                                    <div id="run-result" class="output-area">
+                                        ระบบพร้อมใช้งาน โปรดเขียนโค้ดและคลิก "รันโค้ด"
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="console-content" class="output-content h-full">
@@ -937,7 +1051,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                 <div class="mb-2 md:mb-0 text-center md:text-left">
                     <p class="flex items-center">
-                        <i class="fas fa-code mr-1"></i> Live Code Tester Pro - รองรับ HTML, Python, C#, C++, C, PHP
+                        <i class="fas fa-code mr-1"></i> Live Code Tester Pro - รองรับ HTML, JavaScript, Python, C#, C++, PHP
                     </p>
                 </div>
                 <div class="flex flex-wrap justify-center gap-4">
@@ -1014,6 +1128,8 @@
             const exampleBtn = document.getElementById('example-btn');
             const outputTabs = document.querySelectorAll('.output-tab');
             const outputContents = document.querySelectorAll('.output-content');
+            const runResult = document.getElementById('run-result');
+            const executionOutput = document.getElementById('execution-output');
             
             // ตัวแปรสถานะ
             let isLiveMode = true;
@@ -1026,35 +1142,118 @@
             let currentScreenSize = 'desktop';
             let isRunningCode = false;
             let runHistory = [];
+            let codeMirrorEditor = null;
             
-            // ตัวอย่างโค้ดสำหรับแต่ละภาษา (ลดขนาดโค้ดตัวอย่างลงเนื่องจากจำกัดพื้นที่)
+            // ตัวอย่างโค้ดสำหรับแต่ละภาษา
             const codeExamples = {
                 html: `<!DOCTYPE html>
 <html>
 <head>
     <title>ตัวอย่าง HTML</title>
     <style>
-        body { font-family: Arial; padding: 20px; }
-        h1 { color: blue; }
-        .box { background: #f0f0f0; padding: 20px; margin: 10px 0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        h1 { 
+            color: #fff; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .box { 
+            background: rgba(255,255,255,0.9); 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 10px;
+            color: #333;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
     </style>
 </head>
 <body>
     <h1>สวัสดี Live Code Tester Pro!</h1>
     <div class="box">
         <p>นี่คือตัวอย่างโค้ด HTML พื้นฐาน</p>
-        <button onclick="alert('สวัสดีจาก Live Tester!')">คลิกทดสอบ</button>
+        <button onclick="showMessage()">คลิกทดสอบ</button>
+        <div id="message"></div>
     </div>
     <script>
-        console.log("ระบบพร้อมใช้งาน");
+        function showMessage() {
+            document.getElementById('message').innerHTML = '<h3>ยินดีต้อนรับสู่ Live Code Tester!</h3><p>คุณสามารถทดสอบโค้ดได้ทันทีที่นี่</p>';
+        }
+        
+        console.log("ระบบ HTML พร้อมใช้งาน!");
     <\/script>
 </body>
 </html>`,
                 
+                javascript: `// โปรแกรม JavaScript ตัวอย่าง
+console.log("เริ่มโปรแกรม JavaScript");
+
+// ข้อมูลนักเรียน
+const students = [
+    { name: "สมชาย", age: 18, grades: [85, 90, 78] },
+    { name: "สมหญิง", age: 17, grades: [95, 92, 98] },
+    { name: "สมหมาย", age: 19, grades: [65, 70, 68] }
+];
+
+// ฟังก์ชันคำนวณเกรดเฉลี่ย
+function calculateAverage(grades) {
+    return grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+}
+
+// แสดงข้อมูลนักเรียน
+console.log("\\nข้อมูลนักเรียน:");
+students.forEach(student => {
+    const avg = calculateAverage(student.grades).toFixed(2);
+    console.log(\`\${student.name} (อายุ \${student.age} ปี) - เกรดเฉลี่ย: \${avg}\`);
+});
+
+// ฟังก์ชัน Fibonacci
+function fibonacci(n) {
+    let a = 0, b = 1;
+    const result = [];
+    for (let i = 0; i < n; i++) {
+        result.push(a);
+        [a, b] = [b, a + b];
+    }
+    return result;
+}
+
+console.log("\\nลำดับ Fibonacci 10 ตัวแรก:");
+console.log(fibonacci(10).join(', '));
+
+// การทำงานกับ DOM (สำหรับแสดงผล)
+document.body.innerHTML = '<div style="padding: 20px; font-family: Arial;">';
+document.body.innerHTML += '<h1>ผลลัพธ์ JavaScript</h1>';
+document.body.innerHTML += '<div style="background: #f0f0f0; padding: 15px; border-radius: 5px;">';
+students.forEach(student => {
+    const avg = calculateAverage(student.grades).toFixed(2);
+    document.body.innerHTML += \`<p>\${student.name}: \${avg} คะแนน</p>\`;
+});
+document.body.innerHTML += '</div>';
+document.body.innerHTML += '<p>ดูผลลัพธ์เพิ่มเติมใน Console (F12)</p>';
+document.body.innerHTML += '</div>';
+
+console.log("\\nสิ้นสุดโปรแกรม JavaScript");`,
+                
                 python: `# โปรแกรม Python ตัวอย่าง
-print("=" * 40)
+print("=" * 50)
 print("โปรแกรมภาษา Python ตัวอย่าง")
-print("=" * 40)
+print("=" * 50)
 
 # ข้อมูลนักเรียน
 students = [
@@ -1063,12 +1262,13 @@ students = [
     {"name": "สมหมาย", "age": 19, "grades": [65, 70, 68]}
 ]
 
+# แสดงข้อมูลนักเรียน
 print("\\nข้อมูลนักเรียน:")
 for student in students:
     avg = sum(student["grades"]) / len(student["grades"])
     print(f"{student['name']} (อายุ {student['age']} ปี) - เกรดเฉลี่ย: {avg:.2f}")
 
-# Fibonacci
+# ฟังก์ชัน Fibonacci
 def fibonacci(n):
     a, b = 0, 1
     result = []
@@ -1080,6 +1280,19 @@ def fibonacci(n):
 print("\\nลำดับ Fibonacci 10 ตัวแรก:")
 print(fibonacci(10))
 
+# ตรวจสอบจำนวนเฉพาะ
+def is_prime(num):
+    if num < 2:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+print("\\nจำนวนเฉพาะ 1-20:")
+primes = [num for num in range(1, 21) if is_prime(num)]
+print(primes)
+
 print("\\nสิ้นสุดโปรแกรมตัวอย่าง")`,
                 
                 csharp: `using System;
@@ -1088,21 +1301,28 @@ namespace CodeTesterExample
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            Console.WriteLine("========================================");
+            Console.WriteLine("==========================================");
             Console.WriteLine("โปรแกรมภาษา C# ตัวอย่าง");
-            Console.WriteLine("========================================\\n");
+            Console.WriteLine("==========================================");
+            Console.WriteLine();
             
             // ข้อมูลนักเรียน
-            string[] students = { "สมชาย", "สมหญิง", "สมหมาย" };
+            string[] names = { "สมชาย", "สมหญิง", "สมหมาย" };
             int[] ages = { 18, 17, 19 };
-            double[] averages = { 85.5, 92.0, 68.5 };
+            double[,] grades = { {85, 90, 78}, {95, 92, 98}, {65, 70, 68} };
             
             Console.WriteLine("ข้อมูลนักเรียน:");
-            for (int i = 0; i < students.Length; i++)
+            for (int i = 0; i < names.Length; i++)
             {
-                Console.WriteLine($"{students[i]} (อายุ {ages[i]} ปี) - เกรดเฉลี่ย: {averages[i]:F1}");
+                double sum = 0;
+                for (int j = 0; j < 3; j++)
+                {
+                    sum += grades[i, j];
+                }
+                double average = sum / 3;
+                Console.WriteLine($"{names[i]} (อายุ {ages[i]} ปี) - เกรดเฉลี่ย: {average:F2}");
             }
             
             // Fibonacci
@@ -1116,27 +1336,55 @@ namespace CodeTesterExample
                 b = temp + b;
             }
             
-            Console.WriteLine("\\n\\nสิ้นสุดโปรแกรมตัวอย่าง");
+            // DateTime
+            Console.WriteLine("\\n\\nข้อมูลวันที่และเวลา:");
+            DateTime now = DateTime.Now;
+            Console.WriteLine($"วันที่ปัจจุบัน: {now:dd/MM/yyyy}");
+            Console.WriteLine($"เวลาปัจจุบัน: {now:HH:mm:ss}");
+            Console.WriteLine($"วันในสัปดาห์: {now:dddd}");
+            
+            Console.WriteLine("\\n==========================================");
+            Console.WriteLine("สิ้นสุดโปรแกรมตัวอย่าง C#");
+            Console.WriteLine("==========================================");
         }
     }
 }`,
                 
                 cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <ctime>
+
 using namespace std;
 
+// ฟังก์ชันคำนวณค่าเฉลี่ย
+double calculateAverage(vector<int> grades) {
+    double sum = 0;
+    for (int grade : grades) {
+        sum += grade;
+    }
+    return sum / grades.size();
+}
+
 int main() {
-    cout << "========================================" << endl;
+    cout << "==========================================" << endl;
     cout << "โปรแกรมภาษา C++ ตัวอย่าง" << endl;
-    cout << "========================================\\n" << endl;
+    cout << "==========================================" << endl;
+    cout << endl;
     
     // ข้อมูลนักเรียน
-    string students[] = {"สมชาย", "สมหญิง", "สมหมาย"};
-    int ages[] = {18, 17, 19};
-    double averages[] = {85.5, 92.0, 68.5};
+    vector<string> names = {"สมชาย", "สมหญิง", "สมหมาย"};
+    vector<int> ages = {18, 17, 19};
+    vector<vector<int>> grades = {
+        {85, 90, 78},
+        {95, 92, 98},
+        {65, 70, 68}
+    };
     
     cout << "ข้อมูลนักเรียน:" << endl;
-    for (int i = 0; i < 3; i++) {
-        cout << students[i] << " (อายุ " << ages[i] << " ปี) - เกรดเฉลี่ย: " << averages[i] << endl;
+    for (int i = 0; i < names.size(); i++) {
+        double average = calculateAverage(grades[i]);
+        cout << names[i] << " (อายุ " << ages[i] << " ปี) - เกรดเฉลี่ย: " << average << endl;
     }
     
     // Fibonacci
@@ -1149,68 +1397,86 @@ int main() {
         b = temp + b;
     }
     
-    cout << "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง" << endl;
-    return 0;
-}`,
-                
-                c: `#include <stdio.h>
-
-int main() {
-    printf("========================================\\n");
-    printf("โปรแกรมภาษา C ตัวอย่าง\\n");
-    printf("========================================\\n\\n");
+    // วันที่และเวลา
+    cout << "\\n\\nข้อมูลวันที่และเวลา:" << endl;
+    time_t now = time(0);
+    tm* ltm = localtime(&now);
+    cout << "วันที่: " << ltm->tm_mday << "/" << 1 + ltm->tm_mon << "/" << 1900 + ltm->tm_year << endl;
+    cout << "เวลา: " << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << endl;
     
-    // ข้อมูลนักเรียน
-    char* students[] = {"สมชาย", "สมหญิง", "สมหมาย"};
-    int ages[] = {18, 17, 19};
-    double averages[] = {85.5, 92.0, 68.5};
+    cout << "\\n==========================================" << endl;
+    cout << "สิ้นสุดโปรแกรมตัวอย่าง C++" << endl;
+    cout << "==========================================" << endl;
     
-    printf("ข้อมูลนักเรียน:\\n");
-    for (int i = 0; i < 3; i++) {
-        printf("%s (อายุ %d ปี) - เกรดเฉลี่ย: %.1f\\n", students[i], ages[i], averages[i]);
-    }
-    
-    // Fibonacci
-    printf("\\nลำดับ Fibonacci 10 ตัวแรก:\\n");
-    int a = 0, b = 1;
-    for (int i = 0; i < 10; i++) {
-        printf("%d ", a);
-        int temp = a;
-        a = b;
-        b = temp + b;
-    }
-    
-    printf("\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\n");
     return 0;
 }`,
                 
                 php: `<?php
-echo "========================================\\n";
+// โปรแกรมภาษา PHP ตัวอย่าง
+echo "==========================================\\n";
 echo "โปรแกรมภาษา PHP ตัวอย่าง\\n";
-echo "========================================\\n\\n";
+echo "==========================================\\n\\n";
 
 // ข้อมูลนักเรียน
-$students = ["สมชาย", "สมหญิง", "สมหมาย"];
-$ages = [18, 17, 19];
-$averages = [85.5, 92.0, 68.5];
+$students = [
+    ["name" => "สมชาย", "age" => 18, "grades" => [85, 90, 78]],
+    ["name" => "สมหญิง", "age" => 17, "grades" => [95, 92, 98]],
+    ["name" => "สมหมาย", "age" => 19, "grades" => [65, 70, 68]]
+];
 
+// แสดงข้อมูลนักเรียน
 echo "ข้อมูลนักเรียน:\\n";
-for ($i = 0; $i < count($students); $i++) {
-    echo $students[$i] . " (อายุ " . $ages[$i] . " ปี) - เกรดเฉลี่ย: " . $averages[$i] . "\\n";
+foreach ($students as $student) {
+    $average = array_sum($student["grades"]) / count($student["grades"]);
+    printf("%s (อายุ %d ปี) - เกรดเฉลี่ย: %.2f\\n", 
+           $student["name"], $student["age"], $average);
 }
 
-// Fibonacci
+// ฟังก์ชัน Fibonacci
+function fibonacci($n) {
+    $a = 0;
+    $b = 1;
+    $result = [];
+    for ($i = 0; $i < $n; $i++) {
+        $result[] = $a;
+        $temp = $a;
+        $a = $b;
+        $b = $temp + $b;
+    }
+    return $result;
+}
+
 echo "\\nลำดับ Fibonacci 10 ตัวแรก:\\n";
-$a = 0;
-$b = 1;
-for ($i = 0; $i < 10; $i++) {
-    echo $a . " ";
-    $temp = $a;
-    $a = $b;
-    $b = $temp + $b;
+echo implode(", ", fibonacci(10)) . "\\n";
+
+// ตรวจสอบจำนวนเฉพาะ
+function is_prime($num) {
+    if ($num < 2) return false;
+    for ($i = 2; $i <= sqrt($num); $i++) {
+        if ($num % $i == 0) return false;
+    }
+    return true;
 }
 
-echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\n";
+echo "\\nจำนวนเฉพาะ 1-20:\\n";
+$primes = [];
+for ($i = 1; $i <= 20; $i++) {
+    if (is_prime($i)) {
+        $primes[] = $i;
+    }
+}
+echo implode(", ", $primes) . "\\n";
+
+// วันที่และเวลา
+echo "\\nข้อมูลวันที่และเวลา:\\n";
+date_default_timezone_set('Asia/Bangkok');
+echo "วันที่ปัจจุบัน: " . date("d/m/Y") . "\\n";
+echo "เวลาปัจจุบัน: " . date("H:i:s") . "\\n";
+echo "วันในสัปดาห์: " . date("l") . "\\n";
+
+echo "\\n==========================================\\n";
+echo "สิ้นสุดโปรแกรมตัวอย่าง PHP\\n";
+echo "==========================================\\n";
 ?>`
             };
             
@@ -1221,42 +1487,48 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     extension: ".html", 
                     icon: "fab fa-html5", 
                     color: "text-orange-500",
-                    runner: "html" 
+                    runner: "browser",
+                    mode: "htmlmixed"
+                },
+                javascript: { 
+                    name: "JavaScript", 
+                    extension: ".js", 
+                    icon: "fab fa-js", 
+                    color: "text-yellow-500",
+                    runner: "browser",
+                    mode: "javascript"
                 },
                 python: { 
                     name: "Python", 
                     extension: ".py", 
                     icon: "fab fa-python", 
                     color: "text-yellow-500",
-                    runner: "console" 
+                    runner: "skulpt",
+                    mode: "python"
                 },
                 csharp: { 
                     name: "C#", 
                     extension: ".cs", 
                     icon: "fas fa-code", 
                     color: "text-purple-500",
-                    runner: "console" 
+                    runner: "console",
+                    mode: "clike"
                 },
                 cpp: { 
                     name: "C++", 
                     extension: ".cpp", 
                     icon: "fas fa-cog", 
                     color: "text-blue-500",
-                    runner: "console" 
-                },
-                c: { 
-                    name: "C", 
-                    extension: ".c", 
-                    icon: "fas fa-cog", 
-                    color: "text-blue-300",
-                    runner: "console" 
+                    runner: "console",
+                    mode: "clike"
                 },
                 php: { 
                     name: "PHP", 
                     extension: ".php", 
                     icon: "fab fa-php", 
                     color: "text-indigo-500",
-                    runner: "console" 
+                    runner: "phpjs",
+                    mode: "php"
                 }
             };
             
@@ -1267,19 +1539,64 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 return div.innerHTML;
             }
             
+            // ตั้งค่า CodeMirror Editor
+            function setupCodeMirror() {
+                const langInfo = languageInfo[currentLanguage];
+                
+                if (codeMirrorEditor) {
+                    codeMirrorEditor.toTextArea();
+                }
+                
+                codeMirrorEditor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                    mode: langInfo.mode,
+                    theme: "dracula",
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    indentUnit: 4,
+                    tabSize: 4,
+                    indentWithTabs: false,
+                    electricChars: true,
+                    autoCloseBrackets: true,
+                    matchBrackets: true,
+                    extraKeys: {
+                        "Ctrl-Space": "autocomplete",
+                        "Ctrl-S": function() {
+                            saveCode();
+                        },
+                        "Ctrl-Enter": function() {
+                            runCode();
+                        },
+                        "F11": function(cm) {
+                            toggleFullscreen();
+                        }
+                    }
+                });
+                
+                codeMirrorEditor.setSize("100%", "100%");
+                
+                // จัดการ events
+                codeMirrorEditor.on("change", function() {
+                    updateLineNumbers();
+                    updateStats();
+                    if (isLiveMode && currentLanguage === 'html') {
+                        updatePreview();
+                    }
+                });
+            }
+            
             // โหลดโค้ดที่บันทึกไว้ (ถ้ามี)
             function loadSavedCode() {
                 try {
                     const savedCode = localStorage.getItem(`codeTester_${currentLanguage}`);
                     if (savedCode) {
-                        codeEditor.value = savedCode;
+                        codeMirrorEditor.setValue(savedCode);
                         updatePreview();
                         updateLineNumbers();
                         updateStats();
                         showNotification('โหลดโค้ดสำเร็จ', `โหลดโค้ด ${languageInfo[currentLanguage].name} ที่บันทึกไว้`, 'success');
                     } else {
                         // ถ้าไม่มีโค้ดที่บันทึกไว้ ให้ใช้ตัวอย่างโค้ด
-                        codeEditor.value = codeExamples[currentLanguage];
+                        codeMirrorEditor.setValue(codeExamples[currentLanguage]);
                         updateLineNumbers();
                         updatePreview();
                         updateStats();
@@ -1289,28 +1606,34 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 }
             }
             
+            // บันทึกโค้ด
+            function saveCode() {
+                const code = codeMirrorEditor.getValue();
+                localStorage.setItem(`codeTester_${currentLanguage}`, code);
+                showNotification('บันทึกสำเร็จ', 'บันทึกโค้ดเรียบร้อยแล้ว', 'success');
+            }
+            
             // อัปเดต preview
             function updatePreview() {
                 try {
-                    const code = codeEditor.value;
+                    const code = codeMirrorEditor.getValue();
                     
                     if (currentLanguage === 'html') {
-                        // สำหรับ HTML ให้แสดงใน iframe
-                        const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-                        previewDoc.open();
-                        previewDoc.write(code);
-                        previewDoc.close();
+                        // สร้าง iframe สำหรับแสดงผล HTML
+                        const iframe = document.createElement('iframe');
+                        iframe.className = 'web-output';
+                        iframe.sandbox = 'allow-scripts allow-same-origin';
                         
-                        // อัปเดตหน้าจอใหญ่ด้วย (ถ้ากำลังแสดงอยู่)
-                        const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
-                        if (screenDoc && screenDoc.readyState === 'complete') {
-                            screenDoc.open();
-                            screenDoc.write(code);
-                            screenDoc.close();
-                        }
-                    } else {
-                        // สำหรับภาษาอื่นๆ ให้แสดงในคอนโซล
-                        updateConsoleOutput();
+                        executionOutput.innerHTML = '';
+                        executionOutput.appendChild(iframe);
+                        
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        iframeDoc.open();
+                        iframeDoc.write(code);
+                        iframeDoc.close();
+                    } else if (currentLanguage === 'javascript') {
+                        // รัน JavaScript ใน sandbox
+                        runJavaScript(code);
                     }
                     
                     // อัปเดตเวลาล่าสุด
@@ -1324,7 +1647,7 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     updateStats();
                     
                     // แสดงการแจ้งเตือนถ้าไม่ได้อยู่ในโหมด live
-                    if (!isLiveMode) {
+                    if (!isLiveMode && currentLanguage === 'html') {
                         showNotification('อัปเดตสำเร็จ', 'อัปเดต preview เรียบร้อยแล้ว', 'success');
                     }
                 } catch (e) {
@@ -1333,68 +1656,61 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 }
             }
             
-            // อัปเดตคอนโซล output
-            function updateConsoleOutput() {
-                const code = codeEditor.value;
-                consoleOutputContent.innerHTML = '';
-                
-                // เพิ่มข้อความเริ่มต้น
-                consoleOutputContent.innerHTML += `
-                    <div class="console-line console-command">$ โค้ดภาษา ${languageInfo[currentLanguage].name}</div>
-                    <div class="console-line console-info">$ พิมพ์โค้ดด้านซ้ายและคลิก "รันโค้ด" เพื่อทดสอบ</div>
-                    <div class="console-line console-info">$ รองรับการรันโค้ดแบบจำลองสำหรับทุกภาษา</div>
-                `;
-                
-                // แสดงโค้ดที่เขียน
-                consoleOutputContent.innerHTML += `
-                    <div class="console-line console-output-text" style="margin-top: 1rem; white-space: pre-wrap; background: #1e293b; padding: 1rem; border-radius: 0.375rem; font-family: monospace;">
-                        ${escapeHtml(code)}
-                    </div>
-                `;
-            }
-            
             // รันโค้ด
             async function runCode() {
                 if (isRunningCode) return;
                 
                 isRunningCode = true;
                 const startTime = new Date();
-                const code = codeEditor.value;
+                const code = codeMirrorEditor.getValue();
                 
                 // แสดงสถานะการรัน
                 runBtn.innerHTML = '<div class="loading"></div> รันโค้ด...';
                 runBtn.classList.remove('run-button-animation');
                 
                 try {
-                    // เปลี่ยนไปที่แท็บผลการรัน
-                    switchTab('result');
+                    // เปลี่ยนไปที่แท็บ preview
+                    switchTab('preview');
                     
                     // ล้างผลลัพธ์เก่า
-                    executionResultContent.innerHTML = '';
+                    consoleOutputContent.innerHTML = '';
                     
-                    // เพิ่มข้อความเริ่มต้น
-                    executionResultContent.innerHTML += `
+                    // เริ่มต้น console output
+                    consoleOutputContent.innerHTML = `
                         <div class="console-line console-command">$ เริ่มรันโค้ดภาษา ${languageInfo[currentLanguage].name}</div>
                         <div class="console-line console-info">$ เวลาเริ่มต้น: ${startTime.toLocaleTimeString('th-TH')}</div>
-                        <div class="console-line console-info">$ จำนวนบรรทัด: ${code.split('\n').length}</div>
                     `;
                     
-                    // จำลองการรันโค้ด
-                    await simulateCodeExecution(code, currentLanguage);
+                    // รันโค้ดตามภาษา
+                    let result;
+                    switch (currentLanguage) {
+                        case 'html':
+                            result = await runHTML(code);
+                            break;
+                        case 'javascript':
+                            result = await runJavaScript(code);
+                            break;
+                        case 'python':
+                            result = await runPython(code);
+                            break;
+                        case 'csharp':
+                        case 'cpp':
+                            result = await runConsoleLanguage(code, currentLanguage);
+                            break;
+                        case 'php':
+                            result = await runPHP(code);
+                            break;
+                        default:
+                            result = 'ภาษาไม่รองรับการรัน';
+                    }
                     
                     const endTime = new Date();
                     const executionTimeMs = endTime - startTime;
                     
-                    // แสดงผลลัพธ์การรัน
-                    executionResultContent.innerHTML += `
-                        <div class="console-line console-success" style="margin-top: 1rem;">
-                            $ การรันโค้ดสำเร็จเรียบร้อย!
-                        </div>
-                        <div class="console-line console-info">
-                            $ ใช้เวลาในการรัน: ${executionTimeMs} มิลลิวินาที
-                        </div>
-                        <div class="console-line console-info">
-                            $ เวลาสิ้นสุด: ${endTime.toLocaleTimeString('th-TH')}
+                    // แสดงผลลัพธ์ใน console
+                    consoleOutputContent.innerHTML += `
+                        <div class="console-line console-success">
+                            $ การรันโค้ดสำเร็จเรียบร้อย! (${executionTimeMs}ms)
                         </div>
                     `;
                     
@@ -1410,27 +1726,30 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                         success: true
                     });
                     
-                    // อัปเดต console output ด้วย
-                    updateConsoleOutput();
-                    consoleOutputContent.innerHTML += `
-                        <div class="console-line console-success" style="margin-top: 1rem;">
-                            $ การรันโค้ดเสร็จสิ้น (${executionTimeMs}ms)
-                        </div>
-                    `;
+                    // แสดงผลลัพธ์ใน preview
+                    displayExecutionResult(result);
                     
                     showNotification('รันโค้ดสำเร็จ', `รันโค้ด ${languageInfo[currentLanguage].name} เสร็จสิ้นใน ${executionTimeMs}ms`, 'success');
                     
                 } catch (error) {
                     console.error('Error running code:', error);
                     
-                    executionResultContent.innerHTML += `
-                        <div class="console-line console-error" style="margin-top: 1rem;">
+                    // แสดงข้อผิดพลาดใน console
+                    consoleOutputContent.innerHTML += `
+                        <div class="console-line console-error">
                             $ เกิดข้อผิดพลาดในการรันโค้ด: ${error.message}
                         </div>
                         <div class="console-line console-warning">
                             $ โปรดตรวจสอบไวยากรณ์ของโค้ด
                         </div>
                     `;
+                    
+                    // แสดงข้อผิดพลาดใน preview
+                    displayExecutionResult(`<div class="p-4 bg-red-100 text-red-800 rounded-lg">
+                        <h3 class="font-bold">เกิดข้อผิดพลาด</h3>
+                        <p>${escapeHtml(error.message)}</p>
+                        <p class="mt-2 text-sm">โปรดตรวจสอบโค้ดของคุณอีกครั้ง</p>
+                    </div>`);
                     
                     showNotification('เกิดข้อผิดพลาด', 'ไม่สามารถรันโค้ดได้', 'error');
                     
@@ -1445,119 +1764,255 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 }
             }
             
-            // จำลองการรันโค้ด
-            function simulateCodeExecution(code, language) {
-                return new Promise((resolve, reject) => {
+            // แสดงผลลัพธ์การรัน
+            function displayExecutionResult(content) {
+                if (currentLanguage === 'html') {
+                    // สำหรับ HTML ใช้ iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'web-output';
+                    iframe.sandbox = 'allow-scripts allow-same-origin';
+                    
+                    executionOutput.innerHTML = '';
+                    executionOutput.appendChild(iframe);
+                    
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(codeMirrorEditor.getValue());
+                    iframeDoc.close();
+                } else {
+                    // สำหรับภาษาอื่นๆ แสดงใน div
+                    executionOutput.innerHTML = `
+                        <div class="run-output">
+                            <div class="output-area">${content}</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // รัน HTML
+            async function runHTML(code) {
+                return new Promise((resolve) => {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.sandbox = 'allow-scripts allow-same-origin';
+                    
+                    document.body.appendChild(iframe);
+                    
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(code);
+                    iframeDoc.close();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                        resolve('HTML รันสำเร็จ');
+                    }, 100);
+                });
+            }
+            
+            // รัน JavaScript
+            async function runJavaScript(code) {
+                return new Promise((resolve) => {
                     try {
-                        // เพิ่มความล่าช้าเพื่อจำลองการรันโค้ด
+                        // สร้าง sandbox สำหรับรัน JavaScript
+                        const sandbox = document.createElement('div');
+                        sandbox.id = 'js-sandbox';
+                        sandbox.style.display = 'none';
+                        document.body.appendChild(sandbox);
+                        
+                        // บันทึก console.log ดั้งเดิม
+                        const originalLog = console.log;
+                        const originalError = console.error;
+                        const originalWarn = console.warn;
+                        
+                        let output = '';
+                        
+                        // เปลี่ยน console.log เพื่อดักจับ output
+                        console.log = function(...args) {
+                            output += args.join(' ') + '\\n';
+                            originalLog.apply(console, args);
+                        };
+                        
+                        console.error = function(...args) {
+                            output += '[ERROR] ' + args.join(' ') + '\\n';
+                            originalError.apply(console, args);
+                        };
+                        
+                        console.warn = function(...args) {
+                            output += '[WARN] ' + args.join(' ') + '\\n';
+                            originalWarn.apply(console, args);
+                        };
+                        
+                        // รันโค้ด JavaScript
+                        const script = document.createElement('script');
+                        script.textContent = `
+                            try {
+                                ${code}
+                            } catch (e) {
+                                console.error('Runtime Error:', e.message);
+                            }
+                        `;
+                        
+                        sandbox.appendChild(script);
+                        
+                        // รีเซ็ต console functions
                         setTimeout(() => {
-                            // จำลองผลลัพธ์ตามภาษา
-                            let output = '';
+                            console.log = originalLog;
+                            console.error = originalError;
+                            console.warn = originalWarn;
                             
-                            if (language === 'python') {
-                                output = `
-                                    ========================================
-                                    โปรแกรมภาษา Python ตัวอย่าง
-                                    ========================================
-                                    
-                                    ข้อมูลนักเรียน:
-                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 84.33
-                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 95.00
-                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 67.67
-                                    
-                                    ลำดับ Fibonacci 10 ตัวแรก:
-                                    [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
-                                    
-                                    สิ้นสุดโปรแกรมตัวอย่าง
-                                `;
-                            } else if (language === 'csharp') {
-                                output = `
-                                    ========================================
-                                    โปรแกรมภาษา C# ตัวอย่าง
-                                    ========================================
-                                    
-                                    ข้อมูลนักเรียน:
-                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
-                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92.0
-                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
-                                    
-                                    ลำดับ Fibonacci 10 ตัวแรก:
-                                    0 1 1 2 3 5 8 13 21 34
-                                    
-                                    สิ้นสุดโปรแกรมตัวอย่าง
-                                `;
-                            } else if (language === 'cpp') {
-                                output = `
-                                    ========================================
-                                    โปรแกรมภาษา C++ ตัวอย่าง
-                                    ========================================
-                                    
-                                    ข้อมูลนักเรียน:
-                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
-                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92
-                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
-                                    
-                                    ลำดับ Fibonacci 10 ตัวแรก:
-                                    0 1 1 2 3 5 8 13 21 34
-                                    
-                                    สิ้นสุดโปรแกรมตัวอย่าง
-                                `;
-                            } else if (language === 'c') {
-                                output = `
-                                    ========================================
-                                    โปรแกรมภาษา C ตัวอย่าง
-                                    ========================================
-                                    
-                                    ข้อมูลนักเรียน:
-                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
-                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92.0
-                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
-                                    
-                                    ลำดับ Fibonacci 10 ตัวแรก:
-                                    0 1 1 2 3 5 8 13 21 34
-                                    
-                                    สิ้นสุดโปรแกรมตัวอย่าง
-                                `;
-                            } else if (language === 'php') {
-                                output = `
-                                    ========================================
-                                    โปรแกรมภาษา PHP ตัวอย่าง
-                                    ========================================
-                                    
-                                    ข้อมูลนักเรียน:
-                                    สมชาย (อายุ 18 ปี) - เกรดเฉลี่ย: 85.5
-                                    สมหญิง (อายุ 17 ปี) - เกรดเฉลี่ย: 92
-                                    สมหมาย (อายุ 19 ปี) - เกรดเฉลี่ย: 68.5
-                                    
-                                    ลำดับ Fibonacci 10 ตัวแรก:
-                                    0 1 1 2 3 5 8 13 21 34
-                                    
-                                    สิ้นสุดโปรแกรมตัวอย่าง
-                                `;
-                            } else {
-                                output = 'ภาษาไม่รองรับการรันในระบบจำลอง';
+                            document.body.removeChild(sandbox);
+                            
+                            // แสดงผลลัพธ์
+                            if (!output.trim()) {
+                                output = 'JavaScript รันสำเร็จ (ไม่มี output)';
                             }
                             
-                            // เพิ่มผลลัพธ์ลงใน execution result
-                            executionResultContent.innerHTML += `
-                                <div class="console-line console-info" style="margin-top: 1rem;">$ ผลลัพธ์การรันโค้ด:</div>
-                                <div class="console-output-text" style="background: #1e293b; padding: 1rem; border-radius: 0.375rem; margin-top: 0.5rem; font-family: monospace; white-space: pre-wrap;">
-                                    ${escapeHtml(output)}
+                            // สร้าง UI สำหรับแสดงผล
+                            const resultHTML = `
+                                <div class="p-4 bg-blue-50 rounded-lg">
+                                    <h3 class="font-bold text-lg mb-2">ผลลัพธ์ JavaScript</h3>
+                                    <div class="bg-gray-900 text-white p-3 rounded font-mono text-sm overflow-auto max-h-60">
+                                        ${escapeHtml(output)}
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-600">ดูรายละเอียดเพิ่มเติมในแท็บ Console</p>
                                 </div>
                             `;
                             
-                            resolve();
-                        }, 800); // ล่าช้า 0.8 วินาทีเพื่อจำลองการรันโค้ด
-                    } catch (error) {
-                        reject(error);
+                            displayExecutionResult(resultHTML);
+                            resolve(output);
+                        }, 100);
+                        
+                    } catch (e) {
+                        throw new Error(`JavaScript Error: ${e.message}`);
                     }
+                });
+            }
+            
+            // รัน Python (ใช้ Skulpt)
+            async function runPython(code) {
+                return new Promise((resolve) => {
+                    try {
+                        // ตั้งค่า Skulpt
+                        Sk.configure({
+                            output: function(text) {
+                                // อัปเดต output
+                                consoleOutputContent.innerHTML += `<div class="console-line console-output-text">${escapeHtml(text)}</div>`;
+                            },
+                            read: function(x) {
+                                if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                                    throw "File not found: '" + x + "'";
+                                return Sk.builtinFiles["files"][x];
+                            }
+                        });
+                        
+                        // รัน Python code
+                        Sk.misceval.asyncToPromise(function() {
+                            return Sk.importMainWithBody("<stdin>", false, code, true);
+                        }).then(function() {
+                            resolve('Python รันสำเร็จ');
+                        }).catch(function(err) {
+                            throw new Error(`Python Error: ${err.toString()}`);
+                        });
+                        
+                    } catch (e) {
+                        throw new Error(`Python Runtime Error: ${e.message}`);
+                    }
+                });
+            }
+            
+            // รัน PHP (ใช้ PHP.js)
+            async function runPHP(code) {
+                return new Promise((resolve) => {
+                    try {
+                        // สำหรับ PHP จำลองการรัน (ในเบราว์เซอร์จริงต้องใช้ server-side)
+                        let output = '';
+                        
+                        // จำลองผลลัพธ์ PHP เบื้องต้น
+                        if (code.includes('echo') || code.includes('print')) {
+                            // ดักจับ echo statements
+                            const echoMatches = code.match(/echo\s+["']([^"']+)["']/g) || [];
+                            const printMatches = code.match(/print\s+["']([^"']+)["']/g) || [];
+                            
+                            echoMatches.forEach(match => {
+                                output += match.replace(/echo\s+["']/, '').replace(/["']/, '') + '\\n';
+                            });
+                            
+                            printMatches.forEach(match => {
+                                output += match.replace(/print\s+["']/, '').replace(/["']/, '') + '\\n';
+                            });
+                            
+                            if (!output) {
+                                output = 'PHP รันสำเร็จ (ไม่มี output จาก echo/print)';
+                            }
+                        } else {
+                            output = 'PHP รันสำเร็จ';
+                        }
+                        
+                        // แสดงผลลัพธ์
+                        const resultHTML = `
+                            <div class="p-4 bg-purple-50 rounded-lg">
+                                <h3 class="font-bold text-lg mb-2">ผลลัพธ์ PHP (จำลอง)</h3>
+                                <div class="bg-gray-900 text-white p-3 rounded font-mono text-sm overflow-auto max-h-60">
+                                    ${escapeHtml(output)}
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600">หมายเหตุ: PHP ต้องรันบนเซิร์ฟเวอร์จริง</p>
+                            </div>
+                        `;
+                        
+                        displayExecutionResult(resultHTML);
+                        resolve(output);
+                        
+                    } catch (e) {
+                        throw new Error(`PHP Error: ${e.message}`);
+                    }
+                });
+            }
+            
+            // รันภาษา console (C#, C++)
+            async function runConsoleLanguage(code, language) {
+                return new Promise((resolve) => {
+                    // จำลองการรันสำหรับ C# และ C++
+                    let output = '';
+                    
+                    if (code.includes('Console.WriteLine') || code.includes('cout')) {
+                        // ดักจับ output จาก C#/C++
+                        const lines = code.split('\\n');
+                        lines.forEach(line => {
+                            if (line.includes('Console.WriteLine') || line.includes('cout')) {
+                                const match = line.match(/Console\.WriteLine\(["']([^"']+)["']\)/) || 
+                                             line.match(/cout\s*<<\s*["']([^"']+)["']/);
+                                if (match && match[1]) {
+                                    output += match[1] + '\\n';
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (!output.trim()) {
+                        output = `${languageInfo[language].name} รันสำเร็จ (ไม่มี output)`;
+                    }
+                    
+                    // แสดงผลลัพธ์
+                    const resultHTML = `
+                        <div class="p-4 ${language === 'csharp' ? 'bg-purple-50' : 'bg-blue-50'} rounded-lg">
+                            <h3 class="font-bold text-lg mb-2">ผลลัพธ์ ${languageInfo[language].name} (จำลอง)</h3>
+                            <div class="bg-gray-900 text-white p-3 rounded font-mono text-sm overflow-auto max-h-60">
+                                ${escapeHtml(output)}
+                            </div>
+                            <p class="mt-2 text-sm text-gray-600">หมายเหตุ: ${languageInfo[language].name} ต้องคอมไพล์บนเครื่องจริง</p>
+                        </div>
+                    `;
+                    
+                    displayExecutionResult(resultHTML);
+                    resolve(output);
                 });
             }
             
             // อัปเดตสถิติ
             function updateStats() {
-                const code = codeEditor.value;
-                const lines = code.split('\n').length;
+                const code = codeMirrorEditor.getValue();
+                const lines = code.split('\\n').length;
                 const size = new Blob([code]).size;
                 
                 statLanguage.textContent = languageInfo[currentLanguage].name;
@@ -1575,7 +2030,8 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 if (lang === currentLanguage) return;
                 
                 // บันทึกโค้ดปัจจุบันก่อนเปลี่ยนภาษา
-                localStorage.setItem(`codeTester_${currentLanguage}`, codeEditor.value);
+                const currentCode = codeMirrorEditor.getValue();
+                localStorage.setItem(`codeTester_${currentLanguage}`, currentCode);
                 
                 // อัปเดตภาษาใหม่
                 currentLanguage = lang;
@@ -1600,6 +2056,9 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     }
                 });
                 
+                // ตั้งค่า CodeMirror ใหม่สำหรับภาษาใหม่
+                setupCodeMirror();
+                
                 // โหลดโค้ดสำหรับภาษาใหม่
                 loadSavedCode();
                 
@@ -1607,8 +2066,8 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 filenameInput.value = `my-code${langInfo.extension}`;
                 fileExtensionText.textContent = `ไฟล์จะถูกดาวน์โหลดเป็นไฟล์ ${langInfo.extension}`;
                 
-                // อัปเดต preview mode
-                if (lang === 'html') {
+                // เปลี่ยนแท็บตามภาษา
+                if (lang === 'html' || lang === 'javascript') {
                     switchTab('preview');
                 } else {
                     switchTab('console');
@@ -1688,15 +2147,17 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     screenSizeDisplay.textContent = 'ขนาด: เต็มจอ';
                 }
                 
-                // อัปเดต iframe
-                try {
-                    const code = codeEditor.value;
-                    const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
-                    screenDoc.open();
-                    screenDoc.write(code);
-                    screenDoc.close();
-                } catch (e) {
-                    console.error('Error updating screen frame:', e);
+                // อัปเดต iframe สำหรับ HTML
+                if (currentLanguage === 'html') {
+                    try {
+                        const code = codeMirrorEditor.getValue();
+                        const screenDoc = screenFrame.contentDocument || screenFrame.contentWindow.document;
+                        screenDoc.open();
+                        screenDoc.write(code);
+                        screenDoc.close();
+                    } catch (e) {
+                        console.error('Error updating screen frame:', e);
+                    }
                 }
             }
             
@@ -1711,6 +2172,12 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>ดาร์ก</span>';
                     themeToggle.classList.remove('bg-gray-200', 'text-gray-800');
                     themeToggle.classList.add('bg-gray-800', 'text-white');
+                    
+                    // อัปเดต CodeMirror theme
+                    if (codeMirrorEditor) {
+                        codeMirrorEditor.setOption('theme', 'dracula');
+                    }
+                    
                     showNotification('เปลี่ยนธีม', 'เปลี่ยนเป็นธีมดาร์กโหมด', 'success');
                 } else {
                     htmlElement.classList.remove('dark');
@@ -1718,6 +2185,12 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>ไลต์</span>';
                     themeToggle.classList.remove('bg-gray-800', 'text-white');
                     themeToggle.classList.add('bg-gray-200', 'text-gray-800');
+                    
+                    // อัปเดต CodeMirror theme
+                    if (codeMirrorEditor) {
+                        codeMirrorEditor.setOption('theme', 'default');
+                    }
+                    
                     showNotification('เปลี่ยนธีม', 'เปลี่ยนเป็นธีมไลต์โหมด', 'success');
                 }
                 
@@ -1764,9 +2237,6 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     previewSection.style.display = 'none';
                     resizer.style.display = 'none';
                     
-                    // อัปเดต line numbers สำหรับ fullscreen
-                    updateLineNumbers();
-                    
                     showNotification('โหมดเต็มจอ', 'เปิดโหมดเต็มจอแล้ว - กด ESC เพื่อออก', 'info');
                 } else {
                     editorSection.classList.remove('fullscreen');
@@ -1778,9 +2248,6 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     previewSection.style.display = 'flex';
                     resizer.style.display = 'block';
                     
-                    // อัปเดต line numbers กลับสู่ปกติ
-                    updateLineNumbers();
-                    
                     showNotification('โหมดปกติ', 'ปิดโหมดเต็มจอแล้ว', 'success');
                 }
             }
@@ -1791,8 +2258,7 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     'รีเซ็ตโค้ด',
                     `คุณแน่ใจที่จะรีเซ็ตโค้ด ${languageInfo[currentLanguage].name} ทั้งหมด? การเปลี่ยนแปลงทั้งหมดจะหายไป`,
                     function() {
-                        codeEditor.value = codeExamples[currentLanguage];
-                        updateLineNumbers();
+                        codeMirrorEditor.setValue(codeExamples[currentLanguage]);
                         updatePreview();
                         updateStats();
                         showNotification('รีเซ็ตสำเร็จ', `รีเซ็ตโค้ด ${languageInfo[currentLanguage].name} เป็นค่าเริ่มต้นแล้ว`, 'success');
@@ -1814,7 +2280,7 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
             
             // ดาวน์โหลดไฟล์โค้ด
             function downloadCode() {
-                const content = codeEditor.value;
+                const content = codeMirrorEditor.getValue();
                 const filename = filenameInput.value || `my-code${languageInfo[currentLanguage].extension}`;
                 
                 // สร้าง Blob จากเนื้อหา
@@ -1956,83 +2422,14 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 }
             }
             
-            // อัปเดต line numbers
+            // อัปเดต line numbers (สำหรับ textarea fallback)
             function updateLineNumbers() {
-                const lines = codeEditor.value.split('\n').length;
-                const scrollTop = codeEditor.scrollTop;
-                const lineHeight = 21; // ควรตรงกับ line-height ใน CSS
+                const code = codeMirrorEditor.getValue();
+                const lines = code.split('\n').length;
+                const scrollInfo = codeMirrorEditor.getScrollInfo();
                 
-                // ล้าง line numbers เก่า
-                lineNumbersContainer.innerHTML = '';
-                
-                // สร้าง line numbers ใหม่
-                for (let i = 1; i <= Math.max(lines, 30); i++) {
-                    const lineNumber = document.createElement('div');
-                    lineNumber.className = 'line-number';
-                    lineNumber.textContent = i;
-                    lineNumber.dataset.line = i;
-                    
-                    // ไฮไลต์บรรทัดปัจจุบัน
-                    if (i === currentLine) {
-                        lineNumber.classList.add('current-line');
-                    }
-                    
-                    // คลิกเพื่อไปยังบรรทัดนั้น
-                    lineNumber.addEventListener('click', function() {
-                        goToLine(i);
-                    });
-                    
-                    lineNumbersContainer.appendChild(lineNumber);
-                }
-                
-                // ซิงค์การเลื่อน
-                lineNumbersContainer.scrollTop = scrollTop;
-            }
-            
-            // ไปยังบรรทัดที่ระบุ
-            function goToLine(lineNumber) {
-                const lines = codeEditor.value.split('\n');
-                if (lineNumber < 1 || lineNumber > lines.length) return;
-                
-                // คำนวณตำแหน่ง
-                const lineHeight = 21;
-                const targetPosition = (lineNumber - 1) * lineHeight;
-                
-                // เลื่อน editor ไปยังตำแหน่งนั้น
-                codeEditor.scrollTop = targetPosition;
-                
-                // ตั้งค่าเคอร์เซอร์ไปยังต้นบรรทัด
-                let charIndex = 0;
-                for (let i = 0; i < lineNumber - 1; i++) {
-                    charIndex += lines[i].length + 1; // +1 สำหรับ newline
-                }
-                
-                codeEditor.focus();
-                codeEditor.setSelectionRange(charIndex, charIndex);
-                
-                // อัปเดต current line และไฮไลต์
-                currentLine = lineNumber;
-                updateLineNumbers();
-                
-                // ไฮไลต์บรรทัดชั่วคราว
-                const lineElement = lineNumbersContainer.querySelector(`[data-line="${lineNumber}"]`);
-                if (lineElement) {
-                    lineElement.classList.add('highlight');
-                    setTimeout(() => {
-                        lineElement.classList.remove('highlight');
-                    }, 1000);
-                }
-                
-                showNotification('ไปยังบรรทัด', `ไปยังบรรทัดที่ ${lineNumber}`, 'info');
-            }
-            
-            // ตรวจจับบรรทัดปัจจุบันจากตำแหน่งเคอร์เซอร์
-            function detectCurrentLine() {
-                const cursorPosition = codeEditor.selectionStart;
-                const textBeforeCursor = codeEditor.value.substring(0, cursorPosition);
-                const lines = textBeforeCursor.split('\n');
-                currentLine = lines.length;
-                updateLineNumbers();
+                // CodeMirror จัดการ line numbers ให้แล้ว
+                // ฟังก์ชันนี้เก็บไว้สำหรับความเข้ากันได้
             }
             
             // ตั้งค่า keyboard shortcuts
@@ -2041,8 +2438,7 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     // Ctrl+S เพื่อบันทึก
                     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                         e.preventDefault();
-                        localStorage.setItem(`codeTester_${currentLanguage}`, codeEditor.value);
-                        showNotification('บันทึกสำเร็จ', 'บันทึกโค้ดเรียบร้อยแล้ว', 'success');
+                        saveCode();
                     }
                     
                     // Ctrl+Enter หรือ Ctrl+R เพื่อรันโค้ด
@@ -2074,7 +2470,8 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                         e.preventDefault();
                         const line = prompt('ไปยังบรรทัดที่:');
                         if (line && !isNaN(line)) {
-                            goToLine(parseInt(line));
+                            codeMirrorEditor.setCursor(parseInt(line) - 1, 0);
+                            codeMirrorEditor.focus();
                         }
                     }
                     
@@ -2082,7 +2479,7 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                     if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '6') {
                         e.preventDefault();
                         const langIndex = parseInt(e.key) - 1;
-                        const langs = ['html', 'python', 'csharp', 'cpp', 'c', 'php'];
+                        const langs = ['html', 'javascript', 'python', 'csharp', 'cpp', 'php'];
                         if (langs[langIndex]) {
                             changeLanguage(langs[langIndex]);
                         }
@@ -2109,26 +2506,10 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                         }
                     }
                 });
-                
-                // ตรวจจับการเลื่อนเมาส์และการกดคีย์ใน editor
-                codeEditor.addEventListener('click', detectCurrentLine);
-                codeEditor.addEventListener('keyup', detectCurrentLine);
-                codeEditor.addEventListener('scroll', function() {
-                    lineNumbersContainer.scrollTop = codeEditor.scrollTop;
-                });
             }
             
             // ตั้งค่า event listeners
             function setupEventListeners() {
-                // Live update เมื่อพิมพ์ใน editor
-                codeEditor.addEventListener('input', function() {
-                    updateLineNumbers();
-                    updateStats();
-                    if (isLiveMode) {
-                        updatePreview();
-                    }
-                });
-                
                 // ปุ่มรันโค้ด
                 runBtn.addEventListener('click', runCode);
                 quickRunBtn.addEventListener('click', runCode);
@@ -2191,8 +2572,7 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 
                 // ตัวอย่างโค้ด
                 exampleBtn.addEventListener('click', function() {
-                    codeEditor.value = codeExamples[currentLanguage];
-                    updateLineNumbers();
+                    codeMirrorEditor.setValue(codeExamples[currentLanguage]);
                     updatePreview();
                     updateStats();
                     showNotification('โหลดตัวอย่าง', `โหลดตัวอย่างโค้ด ${languageInfo[currentLanguage].name}`, 'success');
@@ -2246,18 +2626,6 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                         screenModal.classList.remove('show');
                     }
                 });
-                
-                // เมื่อ editor ได้รับ focus
-                codeEditor.addEventListener('focus', function() {
-                    this.style.outline = '2px solid #3b82f6';
-                    this.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                });
-                
-                // เมื่อ editor เสีย focus
-                codeEditor.addEventListener('blur', function() {
-                    this.style.outline = 'none';
-                    this.style.boxShadow = 'none';
-                });
             }
             
             // โหลดการตั้งค่าธีมที่บันทึกไว้
@@ -2274,6 +2642,9 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 // โหลดธีมที่บันทึกไว้
                 loadTheme();
                 
+                // ตั้งค่า CodeMirror
+                setupCodeMirror();
+                
                 // ตั้งค่า event listeners
                 setupEventListeners();
                 
@@ -2285,9 +2656,6 @@ echo "\\n\\nสิ้นสุดโปรแกรมตัวอย่าง\\
                 
                 // โหลดโค้ดเริ่มต้น
                 loadSavedCode();
-                
-                // อัปเดต line numbers ครั้งแรก
-                updateLineNumbers();
                 
                 // อัปเดตสถิติครั้งแรก
                 updateStats();
